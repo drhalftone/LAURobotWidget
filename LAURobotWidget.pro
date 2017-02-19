@@ -6,7 +6,7 @@
 
 QT      += core gui widgets serialport network
 
-TARGET   = ButtonWidget
+TARGET   = RoboWidget
 TEMPLATE = app
 
 # INCLUDE BONJOUR
@@ -26,14 +26,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp \
            laurobotwidget.cpp \
            lautcpserialportwidget.cpp \
-    lauzeroconfwidget.cpp
+           lauzeroconfwidget.cpp
 
 HEADERS += laurobotwidget.h \
            lautcpserialportwidget.h \
-    lauzeroconfwidget.h
-
-unix:macx {
-    INCLUDEPATH   += /usr/local/include
-    DEPENDPATH    += /usr/local/include
-    LIBS          += /usr/local/lib/libQtZeroConf.dylib
-}
+           lauzeroconfwidget.h

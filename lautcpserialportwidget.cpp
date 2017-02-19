@@ -1,3 +1,18 @@
+/**************************************************************************************************
+    Copyright 2017 Dr. Daniel L. Lau
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+**************************************************************************************************/
 #include "lautcpserialportwidget.h"
 
 /******************************************************************************/
@@ -101,7 +116,9 @@ void LAUTCPSerialPort::onReadyReadTCP()
     // READ THE CURRENTLY AVAILABLE BYTES FROM THE PORT
     QByteArray byteArray = socket->readAll();
     if (byteArray.isEmpty() == false) {
-        // SEND THE BYTES TO THE TCP CLIENT
+        qDebug() << "LAUTCPSerialPort" << byteArray;
+
+        // SEND THE BYTES TO THE SERIAL PORT
         port.write(byteArray);
     }
 }
@@ -137,10 +154,10 @@ void LAUTCPSerialPort::onDisconnected()
     // START LISTENING FOR A NEW CONNECTION
     if (!this->isListening()) {
         if (!this->listen(QHostAddress::Any, portNumber)) {
-            qDebug() << "LAU3DVideoTCPServer :: Error trying to listen for incoming connections!";
+            qDebug() << "LAUTCPSerialPort :: Error trying to listen for incoming connections!";
         }
     }
-    qDebug() << "LAU3DVideoTCPServer :: Closing connection from " << clientIPAddress;
+    qDebug() << "LAUTCPSerialPort :: Closing connection from " << clientIPAddress;
 }
 
 /******************************************************************************/

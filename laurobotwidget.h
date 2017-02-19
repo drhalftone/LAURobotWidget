@@ -1,3 +1,19 @@
+/**************************************************************************************************
+    Copyright 2017 Dr. Daniel L. Lau
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+**************************************************************************************************/
+
 #ifndef LAUBUTTONWIDGET_H
 #define LAUBUTTONWIDGET_H
 
@@ -14,6 +30,8 @@
 #include <QApplication>
 #include <QInputDialog>
 #include <QSerialPortInfo>
+
+#include "lauzeroconfwidget.h"
 
 #define LAUROBOT_WIDGETADDRESS                        128
 #define LAUROBOT_NULLMESSAGESENT                       -1
@@ -80,11 +98,15 @@ class LAURobotObject : public QObject
 
 public:
     LAURobotObject(QString portString, QObject *parent = 0);
+    LAURobotObject(QString ipAddress, int portNumber, QObject *parent = 0);
     ~LAURobotObject();
 
     bool isValid() const
     {
-        return (port.isOpen());
+        if (port) {
+            return (port->isOpen());
+        }
+        return (false);
     }
 
     QString firmware() const
@@ -103,7 +125,7 @@ public slots:
 private:
     enum CRC { CRCSend, CRCReceive };
 
-    QSerialPort port;
+    QIODevice *port;
     QString errorString;
     QList<unsigned short> crcList;
     QList<int> messageIDList;
@@ -115,6 +137,10 @@ private:
 
 private slots:
     void onReadyRead();
+    void onConnected();
+    void onDisconnected();
+    void onTcpError(QAbstractSocket::SocketError error);
+
     QByteArray appendCRC(QByteArray byteArray, CRC state);
     bool checkCRC(QByteArray byteArray, CRC state);
 
