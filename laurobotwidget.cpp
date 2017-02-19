@@ -287,12 +287,24 @@ void LAURobotObject::onSendMessage(int message, void *argument)
         port.write(appendCRC(byteArray, CRCSend));
         messageIDList.append(message);
     } else if (message == LAUROBOT_DRIVEMOTOR2_7BIT) {
+        byteArray.append((char)LAUROBOT_DRIVEMOTOR2_7BIT);
+        byteArray.append((char *)argument, sizeof(char));
+        port.write(appendCRC(byteArray, CRCSend));
+        messageIDList.append(message);
     } else if (message == LAUROBOT_DRIVEFORWARDMIXEDMODE) {
     } else if (message == LAUROBOT_DRIVEBACKWARDSMIXEDMODE) {
     } else if (message == LAUROBOT_TURNRIGHTMIXEDMODE) {
     } else if (message == LAUROBOT_TURNLEFTMIXEDMODE) {
     } else if (message == LAUROBOT_DRIVEFORWARDORBACKWARD_7BIT) {
+        byteArray.append((char)LAUROBOT_DRIVEFORWARDORBACKWARD_7BIT);
+        byteArray.append((char *)argument, sizeof(char));
+        port.write(appendCRC(byteArray, CRCSend));
+        messageIDList.append(message);
     } else if (message == LAUROBOT_TURNLEFTORRIGHT_7BIT) {
+        byteArray.append((char)LAUROBOT_TURNLEFTORRIGHT_7BIT);
+        byteArray.append((char *)argument, sizeof(char));
+        port.write(appendCRC(byteArray, CRCSend));
+        messageIDList.append(message);
     } else if (message == LAUROBOT_READFIRMWAREVERSION) {
         byteArray.append((char)LAUROBOT_READFIRMWAREVERSION);
         port.write(appendCRC(byteArray, CRCSend));
@@ -418,7 +430,8 @@ bool LAURobotObject::processMessage()
         case LAUROBOT_DRIVEBACKWARDSMOTOR1:
         case LAUROBOT_DRIVEBACKWARDSMOTOR2:
         case LAUROBOT_DRIVEMOTOR1_7BIT:
-        case LAUROBOT_DRIVEMOTOR2_7BIT: {
+        case LAUROBOT_DRIVEMOTOR2_7BIT:
+        case LAUROBOT_TURNLEFTORRIGHT_7BIT: {
             if (messageArray.length() >= 1) {
                 if ((unsigned char)messageArray.at(0) == 0xff) {
                     emit emitMessage(message);
