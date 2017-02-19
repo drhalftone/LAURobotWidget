@@ -25,10 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp \
            laurobotwidget.cpp \
-           lautcpserialportwidget.cpp
+           lautcpserialportwidget.cpp \
+    lauzeroconfwidget.cpp
 
 HEADERS += laurobotwidget.h \
-           lautcpserialportwidget.h
+           lautcpserialportwidget.h \
+    lauzeroconfwidget.h
 
 unix:macx {
     INCLUDEPATH   += /usr/local/include
