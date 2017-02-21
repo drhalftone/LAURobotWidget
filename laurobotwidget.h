@@ -98,9 +98,10 @@ class LAURobotObject : public QObject
 
 public:
     LAURobotObject(QString portString, QObject *parent = 0);
-    LAURobotObject(QString ipAddress, int portNumber, QObject *parent = 0);
+    LAURobotObject(QString ipAddr, int portNum, QObject *parent = 0);
     ~LAURobotObject();
 
+    bool connectPort();
     bool isValid() const
     {
         if (port) {
@@ -125,6 +126,8 @@ public slots:
 private:
     enum CRC { CRCSend, CRCReceive };
 
+    QString ipAddress;
+    int portNumber;
     QIODevice *port;
     QString errorString;
     QList<unsigned short> crcList;

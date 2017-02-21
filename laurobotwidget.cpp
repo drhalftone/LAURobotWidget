@@ -24,7 +24,7 @@ LAURobotWidget::LAURobotWidget(QWidget *parent) : QWidget(parent), robot(NULL)
     this->setLayout(new QHBoxLayout());
     this->layout()->setContentsMargins(6, 6, 6, 6);
     this->layout()->setSpacing(6);
-    this->setWindowTitle("Demo");
+    this->setWindowTitle("LAURobotWidget");
 
     // CREATE A GROUPBOX TO HOLD THE ROBOT CONTROL WIDGETS
     QGroupBox *box = new QGroupBox("Controls");
@@ -55,10 +55,13 @@ LAURobotWidget::LAURobotWidget(QWidget *parent) : QWidget(parent), robot(NULL)
 
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
     robot = new LAURobotObject(QString(), 1, NULL);
-    if (robot->isValid()) {
-        connect(this, SIGNAL(emitMessage(int, void *)), robot, SLOT(onSendMessage(int, void *)));
-        connect(robot, SIGNAL(emitMessage(int, void *)), this, SLOT(onReceiveMessage(int, void *)));
-        connect(robot, SIGNAL(emitError(QString)), this, SLOT(onError(QString)));
+    connect(this, SIGNAL(emitMessage(int, void *)), robot, SLOT(onSendMessage(int, void *)));
+    connect(robot, SIGNAL(emitMessage(int, void *)), this, SLOT(onReceiveMessage(int, void *)));
+    connect(robot, SIGNAL(emitError(QString)), this, SLOT(onError(QString)));
+
+    // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
+    if (robot->connectPort()) {
+        this->setWindowTitle(robot->firmware());
     }
 }
 
@@ -136,7 +139,7 @@ void LAURobotWidget::showEvent(QShowEvent *)
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAURobotObject::LAURobotObject(QString portString, QObject *parent) : QObject(parent), port(NULL), firmwareString(QString("DEMO"))
+LAURobotObject::LAURobotObject(QString portString, QObject *parent) : QObject(parent), ipAddress(portString), portNumber(-1), port(NULL), firmwareString(QString("DEMO"))
 {
     if (portString.isEmpty()) {
         // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
@@ -165,24 +168,13 @@ LAURobotObject::LAURobotObject(QString portString, QObject *parent) : QObject(pa
         ((QSerialPort *)port)->setStopBits(QSerialPort::OneStop);
         ((QSerialPort *)port)->setParity(QSerialPort::NoParity);
         ((QSerialPort *)port)->setFlowControl(QSerialPort::NoFlowControl);
-
-        // OPEN THE SERIAL PORT FOR COMMUNICATION
-        if (!port->open(QIODevice::ReadWrite)) {
-            errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
-            emit emitError(errorString);
-        } else if (!port->isReadable()) {
-            errorString = QString("Port is not readable!\n") + port->errorString();
-            emit emitError(errorString);
-        } else {
-            connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-        }
     }
 }
 
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAURobotObject::LAURobotObject(QString ipAddress, int portNumber, QObject *parent) : QObject(parent), port(NULL), firmwareString(QString("DEMO"))
+LAURobotObject::LAURobotObject(QString ipAddr, int portNum, QObject *parent) : QObject(parent), ipAddress(ipAddr), portNumber(portNum), port(NULL), firmwareString(QString("DEMO"))
 {
     if (ipAddress.isEmpty()) {
         // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
@@ -200,8 +192,16 @@ LAURobotObject::LAURobotObject(QString ipAddress, int portNumber, QObject *paren
         connect(((QTcpSocket *)port), SIGNAL(connected()), this, SLOT(onConnected()));
         connect(((QTcpSocket *)port), SIGNAL(disconnected()), this, SLOT(onDisconnected()));
         connect(((QTcpSocket *)port), SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onTcpError(QAbstractSocket::SocketError)));
+    }
+}
 
-        // CREATE A NEW CONNECTION
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+bool LAURobotObject::connectPort()
+{
+    // CREATE A NEW CONNECTION OR OPEN THE SERIAL PORT FOR COMMUNICATION
+    if (dynamic_cast<QTcpSocket *>(port) != NULL) {
         ((QTcpSocket *)port)->connectToHost(ipAddress, portNumber, QIODevice::ReadWrite);
         if (((QTcpSocket *)port)->waitForConnected(3000) == false) {
             errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
@@ -211,8 +211,21 @@ LAURobotObject::LAURobotObject(QString ipAddress, int portNumber, QObject *paren
             emit emitError(errorString);
         } else {
             connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+            return (true);
+        }
+    } else {
+        if (!port->open(QIODevice::ReadWrite)) {
+            errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
+            emit emitError(errorString);
+        } else if (!port->isReadable()) {
+            errorString = QString("Port is not readable!\n") + port->errorString();
+            emit emitError(errorString);
+        } else {
+            connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+            return (true);
         }
     }
+    return (false);
 }
 
 /****************************************************************************/
