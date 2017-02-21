@@ -200,30 +200,36 @@ LAURobotObject::LAURobotObject(QString ipAddr, int portNum, QObject *parent) : Q
 /****************************************************************************/
 bool LAURobotObject::connectPort()
 {
-    // CREATE A NEW CONNECTION OR OPEN THE SERIAL PORT FOR COMMUNICATION
-    if (dynamic_cast<QTcpSocket *>(port) != NULL) {
-        ((QTcpSocket *)port)->connectToHost(ipAddress, portNumber, QIODevice::ReadWrite);
-        if (((QTcpSocket *)port)->waitForConnected(3000) == false) {
-            errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
-            emit emitError(errorString);
-        } else if (!port->isReadable()) {
-            errorString = QString("Port is not readable!\n") + port->errorString();
-            emit emitError(errorString);
+    // MAKE SURE WE HAVE WHAT WE NEED FOR A CONNECTION
+    if (port) {
+        // CREATE A NEW CONNECTION OR OPEN THE SERIAL PORT FOR COMMUNICATION
+        if (dynamic_cast<QTcpSocket *>(port) != NULL) {
+            ((QTcpSocket *)port)->connectToHost(ipAddress, portNumber, QIODevice::ReadWrite);
+            if (((QTcpSocket *)port)->waitForConnected(3000) == false) {
+                errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
+                emit emitError(errorString);
+            } else if (!port->isReadable()) {
+                errorString = QString("Port is not readable!\n") + port->errorString();
+                emit emitError(errorString);
+            } else {
+                connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+                return (true);
+            }
         } else {
-            connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-            return (true);
+            if (!port->open(QIODevice::ReadWrite)) {
+                errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
+                emit emitError(errorString);
+            } else if (!port->isReadable()) {
+                errorString = QString("Port is not readable!\n") + port->errorString();
+                emit emitError(errorString);
+            } else {
+                connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+                return (true);
+            }
         }
     } else {
-        if (!port->open(QIODevice::ReadWrite)) {
-            errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
-            emit emitError(errorString);
-        } else if (!port->isReadable()) {
-            errorString = QString("Port is not readable!\n") + port->errorString();
-            emit emitError(errorString);
-        } else {
-            connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-            return (true);
-        }
+        errorString = QString("No valid serial port or IP address.\n");
+        emit emitError(errorString);
     }
     return (false);
 }
@@ -348,7 +354,7 @@ void LAURobotObject::onTcpError(QAbstractSocket::SocketError error)
 void LAURobotObject::onSendMessage(int message, void *argument)
 {
     // MAKE SURE WE HAVE AN OPEN PORT BEFORE BUILDING OUR MESSAGE
-    if (port->isOpen() == false) {
+    if (!port || port->isOpen() == false) {
         return;
     }
 

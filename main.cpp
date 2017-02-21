@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    LAUTCPSerialPortServer s;
+    //LAUTCPSerialPortServer s;
 
     LAURobotWidget w;
     w.show();

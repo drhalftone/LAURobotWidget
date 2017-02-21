@@ -109,12 +109,10 @@ public:
         }
         return (false);
     }
-
     QString firmware() const
     {
         return (firmwareString);
     }
-
     QString error() const
     {
         return (errorString);
