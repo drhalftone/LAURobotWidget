@@ -89,7 +89,7 @@ public:
     {
         this->setWindowTitle(QString("TCP Server Address"));
         this->setLayout(new QVBoxLayout());
-        this->layout()->setContentsMargins(0, 0, 0, 0);
+        this->layout()->setContentsMargins(6, 6, 6, 6);
         this->layout()->setSpacing(6);
 
         widget = new LAUZeroConfClientWidget(serviceString, this);

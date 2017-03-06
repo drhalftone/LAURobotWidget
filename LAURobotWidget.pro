@@ -9,9 +9,6 @@ QT      += core gui widgets serialport network
 TARGET   = RoboWidget
 TEMPLATE = app
 
-# INCLUDE BONJOUR
-include(QtZeroConf/qtzeroconf.pri)
-
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -31,3 +28,11 @@ SOURCES += main.cpp \
 HEADERS += laurobotwidget.h \
            lautcpserialportwidget.h \
            lauzeroconfwidget.h
+
+win32{
+    INCLUDEPATH += $$quote(C:/usr/include)
+    DEPENDPATH  += $$quote(C:/usr/include)
+    LIBS        += -L$$quote(C:/usr/lib)
+    CONFIG(release, debug|release): LIBS += -lQtZeroConf
+    CONFIG(debug, debug|release):   LIBS += -lQtZeroConfd
+}
