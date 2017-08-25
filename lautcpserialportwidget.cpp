@@ -30,11 +30,19 @@ LAUTCPSerialPortServer::LAUTCPSerialPortServer(int num, unsigned short identifie
 
     // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
     QList<QSerialPortInfo> portList = QSerialPortInfo::availablePorts();
-    for (int n = 0; n < portList.count(); n++) {
-        qDebug() << portList.at(n).portName();
-        qDebug() << portList.at(n).productIdentifier();
-        if (identifier == 0xFFFF || portList.at(n).productIdentifier() == identifier) {
-            ports << new LAUTCPSerialPort(portList.at(n).portName(), num + n);
+    for (int m = 0; m < portList.count(); m++) {
+        qDebug() << portList.at(m).portName();
+        qDebug() << portList.at(m).productIdentifier();
+        if (identifier == 0xFFFF || portList.at(m).productIdentifier() == identifier) {
+            ports << new LAUTCPSerialPort(portList.at(m).portName(), num + m);
+        }
+        for (int n = portList.count() - 1; n > m; n--) {
+            if (portList.at(n).description() == portList.at(m).description() &&
+                portList.at(n).manufacturer() == portList.at(m).manufacturer() &&
+                portList.at(n).vendorIdentifier() == portList.at(m).vendorIdentifier() &&
+                portList.at(n).productIdentifier() == portList.at(m).productIdentifier()) {
+                portList.removeAt(n);
+            }
         }
     }
 }
@@ -221,5 +229,145 @@ void LAUTCPSerialPort::onTcpError(QAbstractSocket::SocketError error)
             break;
         default:
             qDebug() << "LAU3DVideoTCPClient :: Default error!";
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+LAUTCPSerialPortClient::LAUTCPSerialPortClient(QString portString, QObject *parent) : QObject(parent), ipAddress(portString), portNumber(-1), port(NULL)
+{
+    if (portString.isEmpty()) {
+        // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
+        QStringList ports;
+        QList<QSerialPortInfo> portList = QSerialPortInfo::availablePorts();
+        for (int m = 0; m < portList.count(); m++) {
+            ports << portList.at(m).portName();
+            for (int n = portList.count() - 1; n > m; n--) {
+                if (portList.at(n).description() == portList.at(m).description() &&
+                    portList.at(n).manufacturer() == portList.at(m).manufacturer() &&
+                    portList.at(n).vendorIdentifier() == portList.at(m).vendorIdentifier() &&
+                    portList.at(n).productIdentifier() == portList.at(m).productIdentifier()) {
+                    portList.removeAt(n);
+                }
+            }
+        }
+
+        // ASK THE USER WHICH PORT SHOULD WE USE AND THEN TRY TO CONNECT
+        bool okay = false;
+        portString = QInputDialog::getItem(NULL, QString("RoboClaw"), QString("Select RoboClaw Port"), ports, 0, false, &okay);
+        if (okay == false) {
+            onError(QString("Connection to RoboClaw canceled by user."));
+        }
+    }
+
+    if (portString.isEmpty() == false) {
+        // CREATE A SERIAL PORT OBJECT
+        port = new QSerialPort();
+
+        // SET THE SERIAL PORT SETTINGS
+        ((QSerialPort *)port)->setPortName(portString);
+        ((QSerialPort *)port)->setBaudRate(QSerialPort::Baud115200);
+        ((QSerialPort *)port)->setDataBits(QSerialPort::Data8);
+        ((QSerialPort *)port)->setStopBits(QSerialPort::OneStop);
+        ((QSerialPort *)port)->setParity(QSerialPort::NoParity);
+        ((QSerialPort *)port)->setFlowControl(QSerialPort::NoFlowControl);
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+LAUTCPSerialPortClient::LAUTCPSerialPortClient(QString ipAddr, int portNum, QObject *parent) : QObject(parent), ipAddress(ipAddr), portNumber(portNum), port(NULL)
+{
+    if (ipAddress.isEmpty()) {
+        // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
+        LAUZeroConfClientDialog dialog(QString("_lautcpserialportserver._tcp"));
+        if (dialog.exec()) {
+            ipAddress = dialog.address();
+            portNumber = dialog.port();
+        }
+    }
+
+    // CREATE A TCP SOCKET OBJECT
+    if (ipAddress.isEmpty() == false) {
+        port = new QTcpSocket();
+        connect(((QTcpSocket *)port), SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+        connect(((QTcpSocket *)port), SIGNAL(connected()), this, SLOT(onConnected()));
+        connect(((QTcpSocket *)port), SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+        connect(((QTcpSocket *)port), SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onTcpError(QAbstractSocket::SocketError)));
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+bool LAUTCPSerialPortClient::connectPort()
+{
+    // MAKE SURE WE HAVE WHAT WE NEED FOR A CONNECTION
+    if (port) {
+        // CREATE A NEW CONNECTION OR OPEN THE SERIAL PORT FOR COMMUNICATION
+        if (dynamic_cast<QTcpSocket *>(port) != NULL) {
+            ((QTcpSocket *)port)->connectToHost(ipAddress, portNumber, QIODevice::ReadWrite);
+            if (((QTcpSocket *)port)->waitForConnected(3000) == false) {
+                errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
+                onError(errorString);
+            } else if (!port->isReadable()) {
+                errorString = QString("Port is not readable!\n") + port->errorString();
+                onError(errorString);
+            } else {
+                connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+                return (true);
+            }
+        } else {
+            if (!port->open(QIODevice::ReadWrite)) {
+                errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
+                onError(errorString);
+            } else if (!port->isReadable()) {
+                errorString = QString("Port is not readable!\n") + port->errorString();
+                onError(errorString);
+            } else {
+                connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+                return (true);
+            }
+        }
+    } else {
+        errorString = QString("No valid serial port or IP address.\n");
+        onError(errorString);
+    }
+    return (false);
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+LAUTCPSerialPortClient::~LAUTCPSerialPortClient()
+{
+    // CLOSE THE SERIAL PORT IF IT IS CURRENTLY OPEN
+    if (port && port->isOpen()) {
+        port->close();
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAUTCPSerialPortClient::onTcpError(QAbstractSocket::SocketError error)
+{
+    switch (error) {
+        case QAbstractSocket::RemoteHostClosedError:
+            onError(QString("LAU3DVideoTCPClient :: Remote host closed error!"));
+            break;
+        case QAbstractSocket::HostNotFoundError:
+            // KEEP TRYING UNTIL WE GET A CONNECTION
+            onError(QString("LAU3DVideoTCPClient :: Host not found error!"));
+            break;
+        case QAbstractSocket::ConnectionRefusedError:
+            // KEEP TRYING UNTIL WE GET A CONNECTION
+            onError(QString("LAU3DVideoTCPClient :: Connection refused error!"));
+            break;
+        default:
+            onError(QString("LAU3DVideoTCPClient :: Default error!"));
+            break;
     }
 }

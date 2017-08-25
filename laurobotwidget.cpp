@@ -174,8 +174,16 @@ LAURobotObject::LAURobotObject(QString portString, QObject *parent) : QObject(pa
         // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
         QStringList ports;
         QList<QSerialPortInfo> portList = QSerialPortInfo::availablePorts();
-        for (int n = 0; n < portList.count(); n++) {
-            ports << portList.at(n).portName();
+        for (int m = 0; m < portList.count(); m++) {
+            ports << portList.at(m).portName();
+            for (int n = portList.count() - 1; n > m; n--) {
+                if (portList.at(n).description() == portList.at(m).description() &&
+                    portList.at(n).manufacturer() == portList.at(m).manufacturer() &&
+                    portList.at(n).vendorIdentifier() == portList.at(m).vendorIdentifier() &&
+                    portList.at(n).productIdentifier() == portList.at(m).productIdentifier()) {
+                    portList.removeAt(n);
+                }
+            }
         }
 
         // ASK THE USER WHICH PORT SHOULD WE USE AND THEN TRY TO CONNECT

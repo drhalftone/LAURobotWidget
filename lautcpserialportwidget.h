@@ -20,6 +20,8 @@
 #ifndef LAUTCPSERIALPORTWIDGET_H
 #define LAUTCPSERIALPORTWIDGET_H
 
+#include <QInputDialog>
+
 #include "lauzeroconfwidget.h"
 
 #define LAUTCPSERIALPORTSERVERPORTNUMER  11364
@@ -87,14 +89,17 @@ public:
     {
         return (ports.count());
     }
+
     bool isConnected(int n) const
     {
         return (ports.at(n)->isConnected());
     }
+
     QString ipAddress(int n) const
     {
         return (ports.at(n)->ipAddress());
     }
+
     int localPort(int n) const
     {
         return (ports.at(n)->localPort());
@@ -102,6 +107,51 @@ public:
 
 private:
     QList<LAUTCPSerialPort *> ports;
+};
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+class LAUTCPSerialPortClient : public QObject
+{
+    Q_OBJECT
+
+public:
+    LAUTCPSerialPortClient(QString portString, QObject *parent = 0);
+    LAUTCPSerialPortClient(QString ipAddr, int portNum, QObject *parent = 0);
+    ~LAUTCPSerialPortClient();
+
+    bool connectPort();
+    bool isValid() const
+    {
+        if (port) {
+            return (port->isOpen());
+        }
+        return (false);
+    }
+    void write(QByteArray byteArray) { if (isValid()) port->write(byteArray); }
+    QString error() const { return (errorString); }
+    QString address() const { return(ipAddress); }
+    int number() const { return(portNumber); }
+
+    bool bytesAvailable() { return(port->bytesAvailable()); }
+    QByteArray readAll() { return(port->readAll()); }
+
+public slots:
+    virtual void onSendMessage(int message, void *argument = NULL) = 0;
+    virtual void onReadyRead() = 0;
+    virtual void onConnected() { ; }
+    virtual void onDisconnected() { ; }
+    virtual void onError(QString error) { qDebug() << "LAUTCPSerialPortClient ::" << error; }
+
+private:
+    QString ipAddress;
+    int portNumber;
+    QIODevice *port;
+    QString errorString;
+
+private slots:
+    void onTcpError(QAbstractSocket::SocketError error);
 };
 
 #endif // LAUTCPSERIALPORTWIDGET_H

@@ -17,11 +17,9 @@
 
 **************************************************************************************************/
 
-#ifdef KEYENCE
 #include "laukeyencewidget.h"
-#else
 #include "laurobotwidget.h"
-#endif
+#include "laurplidarwidget.h"
 #include "lautcpserialportwidget.h"
 #include <QApplication>
 
@@ -29,12 +27,10 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-#ifdef KEYENCE
-    LAUKeyenceWidget w(QString(""));
-#else
-    LAUTCPSerialPortServer s(-1, 9220);
-    LAURobotWidget w;
-#endif
-    w.show();
-    return a.exec();
+    //LAUKeyenceWidget w(QString(""));
+    //LAURobotWidget w;
+
+    LAUTCPSerialPortServer s(-1, 60000);
+    LAURPLidarDialog w;
+    return(w.exec());
 }
