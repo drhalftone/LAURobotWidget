@@ -39,8 +39,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp \
            laurobotwidget.cpp \
            lauzeroconfwidget.cpp \
-           lautcpserialportwidget.cpp
+           lautcpserialportwidget.cpp \
+           laupalettewidget.cpp
 
 HEADERS += laurobotwidget.h \
            lauzeroconfwidget.h \
-           lautcpserialportwidget.h
+           lautcpserialportwidget.h \
+           laupalettewidget.h
+
+RESOURCES += laupalettegear.qrc

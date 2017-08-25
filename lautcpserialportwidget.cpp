@@ -21,12 +21,21 @@
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-LAUTCPSerialPortServer::LAUTCPSerialPortServer(int num, QObject *parent) : QObject(parent)
+LAUTCPSerialPortServer::LAUTCPSerialPortServer(int num, unsigned short identifier, QObject *parent) : QObject(parent)
 {
+    // DROP IN DEFAULT PORT NUMBER IF USER SUPPLIED VALUE IS NEGATIVE
+    if (num < 100) {
+        num = LAUTCPSERIALPORTSERVERPORTNUMER;
+    }
+
     // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
     QList<QSerialPortInfo> portList = QSerialPortInfo::availablePorts();
     for (int n = 0; n < portList.count(); n++) {
-        ports << new LAUTCPSerialPort(portList.at(n).portName(), num + n);
+        qDebug() << portList.at(n).portName();
+        qDebug() << portList.at(n).productIdentifier();
+        if (identifier == 0xFFFF || portList.at(n).productIdentifier() == identifier) {
+            ports << new LAUTCPSerialPort(portList.at(n).portName(), num + n);
+        }
     }
 }
 

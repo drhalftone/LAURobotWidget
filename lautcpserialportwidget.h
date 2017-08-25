@@ -80,7 +80,7 @@ class LAUTCPSerialPortServer : public QObject
     Q_OBJECT
 
 public:
-    explicit LAUTCPSerialPortServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, QObject *parent = 0);
+    explicit LAUTCPSerialPortServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0);
     ~LAUTCPSerialPortServer();
 
     int channels() const

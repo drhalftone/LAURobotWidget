@@ -21,46 +21,31 @@
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAURobotWidget::LAURobotWidget(QWidget *parent) : QWidget(parent), robot(NULL)
+LAURobotWidget::LAURobotWidget(QWidget *parent) : LAUPaletteWidget(QString("RoboClaw"), QList<LAUPalette::Packet>(), parent), robot(NULL)
 {
     // SET THE WINDOWS LAYOUT
-    this->setLayout(new QHBoxLayout());
-    this->layout()->setContentsMargins(6, 6, 6, 6);
-    this->layout()->setSpacing(6);
     this->setWindowTitle("LAURobotWidget");
 
-    // CREATE A GROUPBOX TO HOLD THE ROBOT CONTROL WIDGETS
-    QGroupBox *box = new QGroupBox("Controls");
-    box->setLayout(new QVBoxLayout());
-    box->layout()->setContentsMargins(6, 6, 6, 6);
-    box->layout()->setSpacing(6);
-    box->setFixedWidth(160);
-    this->layout()->addWidget(box);
+    // REGISTER THE PALETTE WIDGETS
+    QList<LAUPalette::Packet> packets;
+    LAUPalette::Packet packet;
+    packet.pal = LAUPaletteObject::PaletteButton;
+    packet.pos = QPoint(0, 1);
+    packets << packet;
+    packet.pal = LAUPaletteObject::PaletteSlider;
+    packet.pos = QPoint(1, 0);
+    packets << packet;
+    packet.pal = LAUPaletteObject::PaletteSlider;
+    packet.pos = QPoint(-1, 0);
+    packets << packet;
 
-    // CREATE A LIST OF BUTTONS FOR EACH COMMAND WE MIGHT WANT TO SEND TO THE ROBOT
-    QStringList strings = QStringList() << "Forward" << "Reverse" << "Left" << "Right" << "Stop";
-    for (int m = 0; m < strings.count(); m++) {
-        QString string = strings.at(m);
-        QPushButton *button = new QPushButton(string);
-        connect(button, SIGNAL(clicked()), this, SLOT(onPushButton_clicked()));
-        box->layout()->addWidget(button);
-        buttons << button;
-    }
-    ((QVBoxLayout *)(box->layout()))->addStretch();
-
-    // CREATE A GROUPBOX TO DISPLAY THE RGB+D VIDEO FROM THE ROBOT
-    box = new QGroupBox("View");
-    box->setLayout(new QVBoxLayout());
-    box->layout()->setContentsMargins(6, 6, 6, 6);
-    box->layout()->setSpacing(6);
-    box->setMinimumSize(320, 240);
-    this->layout()->addWidget(box);
+    this->registerLayout(packets);
 
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
     robot = new LAURobotObject(QString(), 1, NULL);
     connect(this, SIGNAL(emitMessage(int, void *)), robot, SLOT(onSendMessage(int, void *)));
     connect(robot, SIGNAL(emitMessage(int, void *)), this, SLOT(onReceiveMessage(int, void *)));
-    connect(robot, SIGNAL(emitError(QString)), this, SLOT(onError(QString)));
+    connect(robot, SIGNAL(emitError(QString)), this, SLOT(onTCPError(QString)));
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (robot->connectPort()) {
@@ -81,33 +66,25 @@ LAURobotWidget::~LAURobotWidget()
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAURobotWidget::onPushButton_clicked()
+void LAURobotWidget::onValueChanged(QPoint pos, int val)
 {
-    // GET THE STRING FOR THE BUTTON THAT IS EMITTED THE CLICKED SIGNAL
-    QString string = ((QPushButton *)this->sender())->text();
+    // DETERMINE IF INCOMING SIGNAL IS FROM LEFT OR RIGHT SLIDER
+    if (pos == QPoint(1, 0)) {
+        unsigned char uval = (unsigned char)((255 - val) / 2);
+        emit emitMessage(LAUROBOT_DRIVEMOTOR1_7BIT, &uval);
+    } else if (pos == QPoint(-1, 0)) {
+        unsigned char uval = (unsigned char)(val / 2);
+        emit emitMessage(LAUROBOT_DRIVEMOTOR2_7BIT, &uval);
+    }
+}
 
-    // GENERATE A COMMAND STRING FOR THE ROBOT BASED ON WHAT BUTTON THE USER PRESSED
-    if (string == "Forward") {
-        // 0 is super fast reverse, 64 is stop, and 127 is superfast forward
-        //unsigned char val = 60;
-        //emit emitMessage(LAUROBOT_DRIVEMOTOR1_7BIT, &val);
-
-        unsigned char val = 10;
-        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
-        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR2, &val);
-    } else if (string == "Reverse") {
-        unsigned char val = 10;
-        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR1, &val);
-        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
-    } else if (string == "Left") {
-        unsigned char val = 10;
-        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR1, &val);
-        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR2, &val);
-    } else if (string == "Right") {
-        unsigned char val = 10;
-        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
-        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
-    } else if (string == "Stop") {
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURobotWidget::onButtonPressed(QPoint pos)
+{
+    // DETERMINE IF SIGNAL IS FROM PUSH BUTTON
+    if (pos == QPoint(0, 1)) {
         unsigned char val = 0;
         emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
         emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
@@ -117,7 +94,56 @@ void LAURobotWidget::onPushButton_clicked()
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAURobotWidget::onError(QString string)
+void LAURobotWidget::onButtonReleased(QPoint pos)
+{
+    // DETERMINE IF SIGNAL IS FROM PUSH BUTTON
+    if (pos == QPoint(0, 1)) {
+        unsigned char val = 0;
+        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
+        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+//void LAURobotWidget::onPushButton_clicked()
+//{
+//    // GET THE STRING FOR THE BUTTON THAT IS EMITTED THE CLICKED SIGNAL
+//    QString string = ((QPushButton *)this->sender())->text();
+
+//    // GENERATE A COMMAND STRING FOR THE ROBOT BASED ON WHAT BUTTON THE USER PRESSED
+//    if (string == "Forward") {
+//        // 0 is super fast reverse, 64 is stop, and 127 is superfast forward
+//        //unsigned char val = 60;
+//        //emit emitMessage(LAUROBOT_DRIVEMOTOR1_7BIT, &val);
+
+//        unsigned char val = 10;
+//        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
+//        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR2, &val);
+//    } else if (string == "Reverse") {
+//        unsigned char val = 10;
+//        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR1, &val);
+//        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
+//    } else if (string == "Left") {
+//        unsigned char val = 10;
+//        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR1, &val);
+//        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR2, &val);
+//    } else if (string == "Right") {
+//        unsigned char val = 10;
+//        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
+//        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
+//    } else if (string == "Stop") {
+//        unsigned char val = 0;
+//        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
+//        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
+//    }
+//}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURobotWidget::onTCPError(QString string)
 {
     QMessageBox::critical(0, QString("Robot Widget"), string, QMessageBox::Ok);
 }
@@ -154,9 +180,9 @@ LAURobotObject::LAURobotObject(QString portString, QObject *parent) : QObject(pa
 
         // ASK THE USER WHICH PORT SHOULD WE USE AND THEN TRY TO CONNECT
         bool okay = false;
-        portString = QInputDialog::getItem(NULL, QString("Palette Gear"), QString("Select Palette Gear Port"), ports, 0, false, &okay);
+        portString = QInputDialog::getItem(NULL, QString("RoboClaw"), QString("Select RoboClaw Port"), ports, 0, false, &okay);
         if (okay == false) {
-            emit emitError(QString("Connection to robot canceled by user."));
+            emit emitError(QString("Connection to RoboClaw canceled by user."));
         }
     }
 

@@ -16,18 +16,25 @@
     along with LAURobotWidget.  If not, see <http://www.gnu.org/licenses/>.
 
 **************************************************************************************************/
-#include "lautcpserialportwidget.h"
+
+#ifdef KEYENCE
+#include "laukeyencewidget.h"
+#else
 #include "laurobotwidget.h"
+#endif
+#include "lautcpserialportwidget.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    //LAUTCPSerialPortServer s;
-
+#ifdef KEYENCE
+    LAUKeyenceWidget w(QString(""));
+#else
+    LAUTCPSerialPortServer s(-1, 9220);
     LAURobotWidget w;
+#endif
     w.show();
-
     return a.exec();
 }

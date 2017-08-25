@@ -34,7 +34,7 @@
 #include <QInputDialog>
 #include <QSerialPortInfo>
 
-#include "lauzeroconfwidget.h"
+#include "laupalettewidget.h"
 
 #define LAUROBOT_WIDGETADDRESS                        128
 #define LAUROBOT_NULLMESSAGESENT                       -1
@@ -156,7 +156,7 @@ signals:
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-class LAURobotWidget : public QWidget
+class LAURobotWidget : public LAUPaletteWidget
 {
     Q_OBJECT
 
@@ -168,12 +168,14 @@ protected:
     void showEvent(QShowEvent *);
 
 public slots:
-    void onPushButton_clicked();
-    void onError(QString string);
+    void onTCPError(QString string);
     void onReceiveMessage(int message, void *argument = NULL);
 
+    void onValueChanged(QPoint pos, int val);
+    void onButtonPressed(QPoint pos);
+    void onButtonReleased(QPoint pos);
+
 private:
-    QList<QPushButton *> buttons;
     LAURobotObject *robot;
 
 signals:

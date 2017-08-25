@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/Images">
+        <file>Images/Palette.bmp</file>
+    </qresource>
+</RCC>

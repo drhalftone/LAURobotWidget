@@ -22,6 +22,8 @@ QT      += core gui widgets serialport network
 TARGET   = RoboWidget
 TEMPLATE = app
 
+DEFINES += KEYENCE
+
 # INCLUDE BONJOUR
 include(QtZeroConf/qtzeroconf.pri)
 
@@ -36,11 +38,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-SOURCES += main.cpp \
-           laurobotwidget.cpp \
-           lauzeroconfwidget.cpp \
-           lautcpserialportwidget.cpp
+SOURCES  += main.cpp\
+            lauzeroconfwidget.cpp \
+            lautcpserialportwidget.cpp \
+            laukeyencewidget.cpp
 
-HEADERS += laurobotwidget.h \
-           lauzeroconfwidget.h \
-           lautcpserialportwidget.h
+HEADERS  += lauzeroconfwidget.h \
+            lautcpserialportwidget.h \
+            laukeyencewidget.h
