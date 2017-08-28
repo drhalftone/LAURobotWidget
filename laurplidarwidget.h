@@ -4,6 +4,7 @@
 #include <QTime>
 #include <QList>
 #include <QMenu>
+#include <QtCore>
 #include <QDebug>
 #include <QWidget>
 #include <QThread>
@@ -51,7 +52,10 @@ public:
 public slots:
     void onReadyRead();
     void onSendMessage(int message, void *argument);
-    void onError(QString error) { emit emitError(error); }
+    void onError(QString error)
+    {
+        emit emitError(error);
+    }
 
     void onScan();
     void onStop();
@@ -63,7 +67,10 @@ public slots:
     void onGetSampleRate();
 
 private:
-    typedef struct{ int message; void *argument; } Packet;
+    typedef struct {
+        int message;
+        void *argument;
+    } Packet;
 
     QByteArray appendCRC(QByteArray byteArray);
     QByteArray processMessage(QByteArray byteArray);
@@ -78,9 +85,11 @@ private:
     QByteArray serialNumber;
 
     void sendNextMessage();
+    QPointF getPoint(int A, int dA, int D);
 
 signals:
     void emitError(QString string);
+    void emitPoint(QPointF pt);
 };
 
 /****************************************************************************/
