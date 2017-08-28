@@ -1,5 +1,6 @@
 #include "laurplidarwidget.h"
 
+const char LAURPLIDAR_RESET_HEADER[7] = { (char)0x52, (char)0x50, (char)0x20, (char)0x4C, (char)0x49, (char)0x44, (char)0x41 };
 const char LAURPLIDAR_SCAN_HEADER[7] = { (char)0xA5, (char)0x5A, (char)0x05, (char)0x00, (char)0x00, (char)0x40, (char)0x81 };
 const char LAURPLIDAR_EXPRESS_HEADER[7] = { (char)0xA5, (char)0x5A, (char)0x54, (char)0x00, (char)0x00, (char)0x40, (char)0x82 };
 const char LAURPLIDAR_INFO_HEADER[7] = { (char)0xA5, (char)0x5A, (char)0x14, (char)0x00, (char)0x00, (char)0x00, (char)0x04 };
@@ -47,7 +48,11 @@ LAURPLidarWidget::~LAURPLidarWidget()
 void LAURPLidarWidget::showEvent(QShowEvent *)
 {
     if (object->isValid()){
-        object->onSendMessage(LAURPLIDAR_SCAN);
+        object->onReset();
+        object->onGetInfo();
+        object->onGetHealth();
+        object->onGetSampleRate();
+        object->onExpressScan();
     }
 }
 
@@ -199,6 +204,33 @@ void LAURPLidarLabel::paintEvent(QPaintEvent *)
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
+LAURPLidarObject::~LAURPLidarObject()
+{
+    if (isValid()){
+        // STOP THE SCANNER
+        onStop();
+
+        // WAIT UNTIL ALL MESSAGES HAVE BEEN HANDLED
+        while (messageList.count() > 0){
+            qApp->processEvents();
+        }
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarObject::sendNextMessage()
+{
+    if (messageList.count() > 0){
+        Packet packet = messageList.first();
+        onSendMessage(packet.message, packet.argument);
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
 void LAURPLidarObject::onSendMessage(int message, void *argument)
 {
     Q_UNUSED(argument);
@@ -207,18 +239,23 @@ void LAURPLidarObject::onSendMessage(int message, void *argument)
     QByteArray byteArray(1, LAURPLIDAR_FIXED_BYTE);
     switch (message){
     case LAURPLIDAR_STOP:
+        qDebug() << "Send LAURPLIDAR_STOP";
         byteArray.append((char)LAURPLIDAR_STOP);
         write(appendCRC(byteArray));
+        messageList.takeFirst();
         break;
     case LAURPLIDAR_RESET:
+        qDebug() << "Send LAURPLIDAR_RESET";
         byteArray.append((char)LAURPLIDAR_RESET);
         write(appendCRC(byteArray));
         break;
     case LAURPLIDAR_SCAN:
+        qDebug() << "Send LAURPLIDAR_SCAN";
         byteArray.append((char)LAURPLIDAR_SCAN);
         write(appendCRC(byteArray));
         break;
     case LAURPLIDAR_EXPRESS_SCAN:
+        qDebug() << "Send LAURPLIDAR_EXPRESS_SCAN";
         byteArray.append((char)LAURPLIDAR_EXPRESS_SCAN);
         byteArray.append((char)0x05);
         byteArray.append((char)0x00);
@@ -226,26 +263,31 @@ void LAURPLidarObject::onSendMessage(int message, void *argument)
         byteArray.append((char)0x00);
         byteArray.append((char)0x00);
         byteArray.append((char)0x00);
-        byteArray.append((char)0x22);
         write(appendCRC(byteArray));
         break;
     case LAURPLIDAR_FORCE_SCAN:
+        qDebug() << "Send LAURPLIDAR_FORCE_SCAN";
         byteArray.append((char)LAURPLIDAR_FORCE_SCAN);
         write(appendCRC(byteArray));
         break;
     case LAURPLIDAR_GET_INFO:
+        qDebug() << "Send LAURPLIDAR_GET_INFO";
         byteArray.append((char)LAURPLIDAR_GET_INFO);
         write(appendCRC(byteArray));
         break;
     case LAURPLIDAR_GET_HEALTH:
+        qDebug() << "Send LAURPLIDAR_GET_HEALTH";
         byteArray.append((char)LAURPLIDAR_GET_HEALTH);
         write(appendCRC(byteArray));
         break;
     case LAURPLIDAR_GET_SAMPLERATE:
+        qDebug() << "Send LAURPLIDAR_GET_SAMPLERATE";
         byteArray.append((char)LAURPLIDAR_GET_SAMPLERATE);
         write(appendCRC(byteArray));
         break;
     }
+    qApp->processEvents();
+    waitForBytesWritten(1000);
 }
 
 /****************************************************************************/
@@ -260,6 +302,94 @@ QByteArray LAURPLidarObject::appendCRC(QByteArray byteArray)
     byteArray.append((char)byte);
 
     return(byteArray);
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarObject::onScan()
+{
+    messageList.append(Packet{LAURPLIDAR_SCAN, NULL});
+    if (messageList.count() == 1){
+        sendNextMessage();
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarObject::onStop()
+{
+    messageList.append(Packet{LAURPLIDAR_STOP, NULL});
+    if (messageList.count() == 1){
+        sendNextMessage();
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarObject::onReset()
+{
+    messageList.append(Packet{LAURPLIDAR_RESET, NULL});
+    if (messageList.count() == 1){
+        sendNextMessage();
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarObject::onGetInfo()
+{
+    messageList.append(Packet{LAURPLIDAR_GET_INFO, NULL});
+    if (messageList.count() == 1){
+        sendNextMessage();
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarObject::onGetHealth()
+{
+    messageList.append(Packet{LAURPLIDAR_GET_HEALTH, NULL});
+    if (messageList.count() == 1){
+        sendNextMessage();
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarObject::onForceScan()
+{
+    messageList.append(Packet{LAURPLIDAR_FORCE_SCAN, NULL});
+    if (messageList.count() == 1){
+        sendNextMessage();
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarObject::onExpressScan()
+{
+    messageList.append(Packet{LAURPLIDAR_EXPRESS_SCAN, NULL});
+    if (messageList.count() == 1){
+        sendNextMessage();
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarObject::onGetSampleRate()
+{
+    messageList.append(Packet{LAURPLIDAR_GET_SAMPLERATE, NULL});
+    if (messageList.count() == 1){
+        sendNextMessage();
+    }
 }
 
 /****************************************************************************/
@@ -282,10 +412,28 @@ void LAURPLidarObject::onReadyRead()
 /****************************************************************************/
 QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
 {
-    if (byteArray.length() > 2){
+    if (byteArray.isEmpty()){
+        return(byteArray);
+    }
+    qDebug() << "State:" << scanState;
+
+    if (scanState == StateNotScanning){
         int message = decodeMessageHeader(byteArray);
 
-        if (message == LAURPLIDAR_GET_INFO){
+        // MAKE SURE THIS IS THE MESSAGE WE HAVE BEEN WAITING FOR
+        if (message != messageList.first().message){
+            qDebug() << "MESSAGE RECEIVED OUT OF ORDER";
+        }
+
+        if (message == LAURPLIDAR_RESET){
+            if (byteArray.length() < 57){
+                return(byteArray);
+            } else {
+                messageList.takeFirst();
+                sendNextMessage();
+                return(processMessage(byteArray.right(byteArray.length() - 57)));
+            }
+        } else if (message == LAURPLIDAR_GET_INFO){
             if (byteArray.length() < 27){
                 return(byteArray);
             } else {
@@ -298,6 +446,8 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
                 serialNumber = message.right(16);
                 qDebug() << modelNumber << versionMajor << versionMinor << hardware << serialNumber;
 
+                messageList.takeFirst();
+                sendNextMessage();
                 return(processMessage(byteArray.right(byteArray.length() - 27)));
             }
         } else if (message == LAURPLIDAR_GET_HEALTH){
@@ -310,6 +460,8 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
                 int errorCode = 256 * (int)message.at(9) + (int)message.at(8);
                 qDebug() << status << errorCode;
 
+                messageList.takeFirst();
+                sendNextMessage();
                 return(processMessage(byteArray.right(byteArray.length() - 10)));
             }
         } else if (message == LAURPLIDAR_GET_SAMPLERATE){
@@ -322,23 +474,68 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
                 int sampleRateExpress = 1000000 / (256 * (int)message.at(10) + (int)message.at(9));
                 qDebug() << sampleRateStandard << sampleRateExpress;
 
+                messageList.takeFirst();
+                sendNextMessage();
                 return(processMessage(byteArray.right(byteArray.length() - 11)));
             }
         } else if (message == LAURPLIDAR_SCAN){
-            if (byteArray.length() < 12){
+            if (byteArray.length() < 7){
                 return(byteArray);
             } else {
-                QByteArray message = byteArray.left(12);
+                scanState = StateScan;
+                messageList.takeFirst();
+                sendNextMessage();
+                return(processMessage(byteArray.right(byteArray.length() - 7)));
+            }
+        } else if (message == LAURPLIDAR_EXPRESS_SCAN){
+            if (byteArray.length() < 7){
+                return(byteArray);
+            } else {
+                scanState = StateExpressScan;
+                messageList.takeFirst();
+                sendNextMessage();
+                return(processMessage(byteArray.right(byteArray.length() - 7)));
+            }
+        } else {
+            qDebug() << byteArray;
+            return(processMessage(byteArray.right(byteArray.length() - 1)));
+        }
+    } else if (scanState == StateScan){
+        if (byteArray.length() > 4){
+            bool start = (byteArray.at(0) & 0x02) == 0x02;
+            if (start){
+                // BEGINNING OF NEW 360 DEGREE SCAN
+            } else {
+                // CONTINUATION OF CURRENT 360 DEGREE SCAN
+            }
+            int quality = byteArray.at(0) & 0xFC;
 
-                int quality = message.at(7);
-                int angle = 256 * (int)message.at(9) + (int)message.at(8);
-                int distance = 256 * (int)message.at(11) + (int)message.at(10);
-                qDebug() << quality << angle << distance;
+            int angle = (256 * (int)byteArray.at(2) + (int)byteArray.at(1))/2;
+            int distance = 256 * (int)byteArray.at(4) + (int)byteArray.at(3);
+            qDebug() << quality << angle << distance;
 
-                return(processMessage(byteArray.right(byteArray.length() - 12)));
+            return(processMessage(byteArray.right(byteArray.length() - 5)));
+        }
+    } else if (scanState == StateExpressScan){
+        if (byteArray.length() > 7){
+            int message = decodeMessageHeader(byteArray);
+            if (message == -1){
+                if (byteArray.length() > 83){
+                    // CHECK THE SYNC BYTES
+                    if ((byteArray.at(0) & 0xF0) == 0xA0 && (byteArray.at(1) & 0xF0) == 0x50){
+                        char checksum = ((byteArray.at(1) & 0x0F) << 4) | (byteArray.at(0) & 0x0F);
+                        int startAngle = 256*(int)(byteArray.at(3) & 0x7F) + (int)byteArray.at(2);
+                        for (int n=0; n<16; n++){
+                            ;
+                        }
+                    }
+                    return(processMessage(byteArray.right(byteArray.length() - 5)));
+                }
+            } else {
+                scanState = StateNotScanning;
+                return(processMessage(byteArray));
             }
         }
-
     }
     return(byteArray);
 }
@@ -349,16 +546,27 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
 int LAURPLidarObject::decodeMessageHeader(QByteArray byteArray)
 {
     if (byteArray.length() < 7){
+        qDebug() << "NO MESSAGE";
         return(-1);
-    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_SCAN_HEADER))){
+    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_RESET_HEADER, 7))){
+        qDebug() << "LAURPLIDAR_RESET_HEADER";
+        return(LAURPLIDAR_RESET);
+    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_SCAN_HEADER, 7))){
+        qDebug() << "LAURPLIDAR_SCAN_HEADER";
         return(LAURPLIDAR_SCAN);
-    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_EXPRESS_HEADER))){
+    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_EXPRESS_HEADER, 7))){
+        qDebug() << "LAURPLIDAR_EXPRESS_SCAN";
         return(LAURPLIDAR_EXPRESS_SCAN);
-    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_INFO_HEADER))){
+    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_INFO_HEADER, 7))){
+        qDebug() << "LAURPLIDAR_GET_INFO";
         return(LAURPLIDAR_GET_INFO);
-    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_HEALTH_HEADER))){
+    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_HEALTH_HEADER, 7))){
+        qDebug() << "LAURPLIDAR_GET_HEALTH";
         return(LAURPLIDAR_GET_HEALTH);
-    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_SAMPLERATE))){
+    } else if (byteArray.startsWith(QByteArray(LAURPLIDAR_SAMPLERATE, 7))){
+        qDebug() << "LAURPLIDAR_GET_SAMPLERATE";
         return(LAURPLIDAR_GET_SAMPLERATE);
+    } else {
+        return(-1);
     }
 }

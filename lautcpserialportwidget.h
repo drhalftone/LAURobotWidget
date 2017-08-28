@@ -133,6 +133,7 @@ public:
     QString error() const { return (errorString); }
     QString address() const { return(ipAddress); }
     int number() const { return(portNumber); }
+    void waitForBytesWritten(int msecs = 30000) { port->waitForBytesWritten(msecs); }
 
     bool bytesAvailable() { return(port->bytesAvailable()); }
     QByteArray readAll() { return(port->readAll()); }

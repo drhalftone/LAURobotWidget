@@ -42,24 +42,42 @@ class LAURPLidarObject : public LAUTCPSerialPortClient
     Q_OBJECT
 
 public:
-    LAURPLidarObject(QString portString, QObject *parent = 0) : LAUTCPSerialPortClient(portString, parent) { ; }
-    LAURPLidarObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent) { ; }
+    enum ScanState { StateNotScanning, StateExpressScan, StateScan };
+
+    LAURPLidarObject(QString portString, QObject *parent = 0) : LAUTCPSerialPortClient(portString, parent), scanState(StateNotScanning) { ; }
+    LAURPLidarObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent), scanState(StateNotScanning) { ; }
+    ~LAURPLidarObject();
 
 public slots:
     void onReadyRead();
-    void onSendMessage(int message, void *argument = NULL);
+    void onSendMessage(int message, void *argument);
     void onError(QString error) { emit emitError(error); }
 
+    void onScan();
+    void onStop();
+    void onReset();
+    void onGetInfo();
+    void onGetHealth();
+    void onForceScan();
+    void onExpressScan();
+    void onGetSampleRate();
+
 private:
+    typedef struct{ int message; void *argument; } Packet;
+
     QByteArray appendCRC(QByteArray byteArray);
     QByteArray processMessage(QByteArray byteArray);
     int decodeMessageHeader(QByteArray byteArray);
 
+    QList<Packet> messageList;
+    ScanState scanState;
     int modelNumber;
     int versionMinor;
     int versionMajor;
     int hardware;
     QByteArray serialNumber;
+
+    void sendNextMessage();
 
 signals:
     void emitError(QString string);
