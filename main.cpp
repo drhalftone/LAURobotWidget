@@ -26,11 +26,18 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setQuitOnLastWindowClosed(false);
+    a.setOrganizationName(QString("Lau Consulting Inc"));
+    a.setOrganizationDomain(QString("drhalftone.com"));
+    a.setQuitOnLastWindowClosed(true);
 
     //LAUKeyenceWidget w(QString(""));
     //LAURobotWidget w;
 
-    LAUTCPSerialPortServer s(-1, 60000);
+    //LAUTCPSerialPortServer s(-1, 60000);
     LAURPLidarDialog w;
-    return(w.exec());
+    if (w.isValid()) {
+        return (w.exec());
+    }
+    return (0);
 }

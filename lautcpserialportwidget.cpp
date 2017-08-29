@@ -103,7 +103,7 @@ void LAUTCPSerialPort::incomingConnection(qintptr handle)
 {
     // OPEN THE SERIAL PORT FOR COMMUNICATION
     if (!port.open(QIODevice::ReadWrite)) {
-        emit emitError(QString("Cannot connect to RoboClaw.\n") + port.errorString());
+        emit emitError(QString("Cannot connect to serial port.\n") + port.errorString());
     } else if (!port.isReadable()) {
         emit emitError(QString("Port is not readable!\n") + port.errorString());
     } else {
@@ -255,9 +255,10 @@ LAUTCPSerialPortClient::LAUTCPSerialPortClient(QString portString, QObject *pare
 
         // ASK THE USER WHICH PORT SHOULD WE USE AND THEN TRY TO CONNECT
         bool okay = false;
-        portString = QInputDialog::getItem(NULL, QString("RoboClaw"), QString("Select RoboClaw Port"), ports, 0, false, &okay);
+        portString = QInputDialog::getItem(NULL, QString("LAUTCPSerialPortClient"), QString("Select Serial Port"), ports, 0, false, &okay);
         if (okay == false) {
-            onError(QString("Connection to RoboClaw canceled by user."));
+            onError(QString("Connection to Serial Port canceled by user."));
+            return;
         }
     }
 
@@ -286,6 +287,8 @@ LAUTCPSerialPortClient::LAUTCPSerialPortClient(QString ipAddr, int portNum, QObj
         if (dialog.exec()) {
             ipAddress = dialog.address();
             portNumber = dialog.port();
+        } else {
+            return;
         }
     }
 
@@ -310,7 +313,7 @@ bool LAUTCPSerialPortClient::connectPort()
         if (dynamic_cast<QTcpSocket *>(port) != NULL) {
             ((QTcpSocket *)port)->connectToHost(ipAddress, portNumber, QIODevice::ReadWrite);
             if (((QTcpSocket *)port)->waitForConnected(3000) == false) {
-                errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
+                errorString = QString("Cannot connect to Serial Port.\n") + port->errorString();
                 onError(errorString);
             } else if (!port->isReadable()) {
                 errorString = QString("Port is not readable!\n") + port->errorString();
@@ -321,7 +324,7 @@ bool LAUTCPSerialPortClient::connectPort()
             }
         } else {
             if (!port->open(QIODevice::ReadWrite)) {
-                errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
+                errorString = QString("Cannot connect to Serial Port.\n") + port->errorString();
                 onError(errorString);
             } else if (!port->isReadable()) {
                 errorString = QString("Port is not readable!\n") + port->errorString();
