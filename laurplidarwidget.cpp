@@ -364,7 +364,7 @@ void LAURPLidarObject::onGetHealth()
 /****************************************************************************/
 void LAURPLidarObject::onForceScan()
 {
-    messageList.append(Packet{LAURPLIDAR_FORCE_SCAN, NULL});
+    messageList.append(Packet{LAURPLIDAR_SCAN, NULL});
     if (messageList.count() == 1){
         sendNextMessage();
     }
