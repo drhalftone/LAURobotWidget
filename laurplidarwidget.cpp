@@ -10,7 +10,7 @@ const char LAURPLIDAR_SAMPLERATE[7] = { (char)0xA5, (char)0x5A, (char)0x04, (cha
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAURPLidarWidget::LAURPLidarWidget(QWidget *parent) : QWidget(parent), object(NULL)
+LAURPLidarWidget::LAURPLidarWidget(QString portString, QWidget *parent) : QWidget(parent), object(NULL)
 {
     // SET THE WINDOWS LAYOUT
     this->setWindowTitle("LAURPLidarWidget");
@@ -24,7 +24,32 @@ LAURPLidarWidget::LAURPLidarWidget(QWidget *parent) : QWidget(parent), object(NU
     this->layout()->addWidget(label);
 
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
-    object = new LAURPLidarObject(QString(), 1, NULL);
+    object = new LAURPLidarObject(portString);
+
+    // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
+    if (object->connectPort()) {
+        connect(object, SIGNAL(emitPoint(QPoint)), label, SLOT(onAddPoint(QPoint)), Qt::DirectConnection);
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+LAURPLidarWidget::LAURPLidarWidget(QString ipAddr, int portNum, QWidget *parent) : QWidget(parent), object(NULL)
+{
+    // SET THE WINDOWS LAYOUT
+    this->setWindowTitle("LAURPLidarWidget");
+    this->setLayout(new QVBoxLayout());
+    this->layout()->setContentsMargins(0, 0, 0, 0);
+
+    // CREATE LIDAR LABEL TO DISPLAY LIDAR DATA AS IT ARRIVES
+    label = new LAURPLidarLabel();
+    label->setMinimumHeight(200);
+    label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    this->layout()->addWidget(label);
+
+    // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
+    object = new LAURPLidarObject(ipAddr, portNum);
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
@@ -89,7 +114,7 @@ void LAURPLidarLabel::mousePressEvent(QMouseEvent *event)
 void LAURPLidarLabel::onEnableSavePoints(bool state)
 {
     if (state) {
-        pts.clear();
+        points.clear();
         savePointsFlag = true;
     } else {
         savePointsFlag = false;
@@ -118,13 +143,33 @@ void LAURPLidarLabel::onAddPoint(QPoint pt)
         bottomRight.setY(qMax(bottomRight.y(), pt.y()));
 
         // ADD THE NEW POINT TO OUR POINT LIST
-        pts.append(pt);
+        points.append(pt);
 
         // UPDATE THE LABEL ON SCREEN FOR THE USER
-        if (pts.count() % 100 == 0) {
-            qDebug() << "Number of points:" << pts.count();
+        if (points.count() % 100 == 0) {
+            qDebug() << "Number of points:" << points.count();
             update();
         }
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarLabel::onAddPoints(QList<QPoint> pts)
+{
+    for (int n = 0; n < pts.count(); n++) {
+        onAddPoint(pts.at(n));
+    }
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAURPLidarLabel::onAddPoints(QVector<QPoint> pts)
+{
+    for (int n = 0; n < pts.count(); n++) {
+        onAddPoint(pts[n]);
     }
 }
 
@@ -147,8 +192,8 @@ void LAURPLidarLabel::onSavePoints()
         QFile file(filename);
         if (file.open(QIODevice::WriteOnly)) {
             //file.write(QString("sensorX, sensorY\n").toLatin1());
-            for (int n = 0; n < pts.count(); n++) {
-                QPoint pt = pts.at(n);
+            for (int n = 0; n < points.count(); n++) {
+                QPoint pt = points.at(n);
                 file.write(QString("%1, %2\n").arg(pt.x()).arg(pt.y()).toLatin1());
             }
             file.close();
@@ -172,7 +217,7 @@ void LAURPLidarLabel::paintEvent(QPaintEvent *)
     painter.setBrush(Qt::white);
     painter.drawRect(0, 0, this->width(), this->height());
 
-    if (pts.count() > 100) {
+    if (points.count() > 100) {
         // CALCULATE SCALE FACTOR TO MAINTAIN 1:1 ASPECT RATIO
         float xScale = (float)this->width() / (float)(bottomRight.x() - topLeft.x());
         float yScale = (float)this->height() / (float)(bottomRight.y() - topLeft.y());
@@ -192,8 +237,8 @@ void LAURPLidarLabel::paintEvent(QPaintEvent *)
         QPen pen(Qt::red, 1.0f, Qt::SolidLine);
         pen.setCosmetic(true);
         painter.setPen(pen);
-        for (int n = 1; n < pts.count() && n < 10000; n++) {
-            painter.drawPoint(pts.at(pts.count() - n));
+        for (int n = 1; n < points.count() && n < 10000; n++) {
+            painter.drawPoint(points.at(points.count() - n));
         }
     }
 
@@ -518,26 +563,41 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
         }
     } else if (scanState == StateExpressScan) {
         if (byteArray.length() > 7) {
+            // LET'S CHECK TO SEE IF WE HAVE A SCAN OR THE RESPONSE TO SOME OTHER MESSAGE
             int message = decodeMessageHeader(byteArray);
             if (message == -1) {
+                // IF WE MADE IT THIS FAR, THEN WE HAVE A VALID SCAN
                 if (byteArray.length() > 83) {
+                    // MAKE SURE WE HAVE THE CORRECT HEADER BYTES FOR THE SCAN
                     if ((byteArray.at(0) & 0xF0) == 0xA0 && (byteArray.at(1) & 0xF0) == 0x50) {
+                        // EXTRACT THE HEADER FIELDS OF OUR SCAN
                         bool start = (byteArray.at(3) & 0x80) == 0x80;
                         char checksum = ((byteArray.at(1) & 0x0F) << 4) | (byteArray.at(0) & 0x0F);
+
+                        // GET THE STARTING ANGLE OF THE SCANNER
                         int startAngle = 256 * (int)(byteArray.at(3) & 0x7F) + (int)byteArray.at(2);
+
+                        // ITERATE THROUGH ALL 32 MEASUREMENTS
                         for (int n = 0; n < 16; n++) {
+                            // GET THE FIRST OF TWO MEASUREMENTS WITHIN THE CURRENT PAIR
                             int dTheta1 = 16 * (int)(byteArray.at(4 + 5 * n + 0) & 0x03) + (int)(byteArray.at(4 + 5 * n + 4) & 0x0F);
                             int distance1 = 64 * (int)byteArray.at(4 + 5 * n + 1) + (int)((byteArray.at(4 + 5 * n + 0) >> 1) & 0x3F);
-                            emit emitPoint(getPoint(startAngle, dTheta1, distance1));
+                            scan[2 * n + 0] = getPoint(startAngle, dTheta1, distance1);
 
+                            // GET THE SECOND OF TWO MEASUREMENTS WITHIN THE CURRENT PAIR
                             int dTheta2 = 16 * (int)(byteArray.at(4 + 5 * n + 2) & 0x03) + (int)((byteArray.at(4 + 5 * n + 4) & 0xF0) >> 4);
                             int distance2 = 64 * (int)byteArray.at(4 + 5 * n + 3) + (int)((byteArray.at(4 + 5 * n + 2) >> 1) & 0x3F);
-                            emit emitPoint(getPoint(startAngle, dTheta2, distance2));
+                            scan[2 * n + 1] = getPoint(startAngle, dTheta2, distance2);
                         }
                     }
+                    // SEND OUR SCAN VECTOR TO OUR LIDAR LABEL
+                    emit emitScan(scan);
+
+                    // PROCESS WHATEVER REMAINS OF THE INCOMING MESSAGE
                     return (processMessage(byteArray.right(byteArray.length() - 5)));
                 }
             } else {
+                // IF WE MADE IT HERE, THEN WE MUST NOT HAVE A SCAN BUT SOME OTHER MESSAGE RESPONSE
                 scanState = StateNotScanning;
                 return (processMessage(byteArray));
             }
@@ -549,10 +609,10 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-QPointF LAURPLidarObject::getPoint(int A, int dA, int D)
+QPoint LAURPLidarObject::getPoint(int A, int dA, int D)
 {
-    float angle = ((float)A + (float)dA) / 16.0f * 0.017453292519943f;
-    return ((float)D * QPointF(qCos(angle), qSin(angle)));
+    double angle = ((double)A + (double)dA) / 16.0 * 0.017453292519943;
+    return (QPoint((double)D * qCos(angle), (double)D * qSin(angle)));
 }
 
 /****************************************************************************/

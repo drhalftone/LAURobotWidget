@@ -124,26 +124,55 @@ public:
     bool connectPort();
     bool isValid() const
     {
-        if (port) {
-            return (port->isOpen());
-        }
-        return (false);
+        return (port && port->isOpen());
     }
-    void write(QByteArray byteArray) { if (isValid()) port->write(byteArray); }
-    QString error() const { return (errorString); }
-    QString address() const { return(ipAddress); }
-    int number() const { return(portNumber); }
-    void waitForBytesWritten(int msecs = 30000) { port->waitForBytesWritten(msecs); }
 
-    bool bytesAvailable() { return(port->bytesAvailable()); }
-    QByteArray readAll() { return(port->readAll()); }
+    void write(QByteArray byteArray)
+    {
+        if (isValid()) {
+            port->write(byteArray);
+        }
+    }
+
+    QString error() const
+    {
+        return (errorString);
+    }
+
+    QString address() const
+    {
+        return (ipAddress);
+    }
+
+    int number() const
+    {
+        return (portNumber);
+    }
+
+    void waitForBytesWritten(int msecs = 30000)
+    {
+        port->waitForBytesWritten(msecs);
+    }
+
+    bool bytesAvailable()
+    {
+        return (port->bytesAvailable());
+    }
+
+    QByteArray readAll()
+    {
+        return (port->readAll());
+    }
 
 public slots:
     virtual void onSendMessage(int message, void *argument = NULL) = 0;
     virtual void onReadyRead() = 0;
     virtual void onConnected() { ; }
     virtual void onDisconnected() { ; }
-    virtual void onError(QString error) { qDebug() << "LAUTCPSerialPortClient ::" << error; }
+    virtual void onError(QString error)
+    {
+        qDebug() << "LAUTCPSerialPortClient ::" << error;
+    }
 
 private:
     QString ipAddress;

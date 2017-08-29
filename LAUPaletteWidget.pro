@@ -52,3 +52,10 @@ HEADERS += laurobotwidget.h \
            laurplidarwidget.h
 
 RESOURCES += laupalettegear.qrc
+
+#unix:macx {
+#    QMAKE_MAC_SDK   = macosx10.12
+#    QMAKE_CXXFLAGS += -msse2 -msse3 -mssse3 -msse4.1
+#    INCLUDEPATH    += /usr/local/include /usr/local/include/eigen3
+#    #LIBS           += /usr/local/lib/libtiff.5.dylib
+#}

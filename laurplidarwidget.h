@@ -45,8 +45,8 @@ class LAURPLidarObject : public LAUTCPSerialPortClient
 public:
     enum ScanState { StateNotScanning, StateExpressScan, StateScan };
 
-    LAURPLidarObject(QString portString, QObject *parent = 0) : LAUTCPSerialPortClient(portString, parent), scanState(StateNotScanning) { ; }
-    LAURPLidarObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent), scanState(StateNotScanning) { ; }
+    LAURPLidarObject(QString portString, QObject *parent = 0) : LAUTCPSerialPortClient(portString, parent), scanState(StateNotScanning), scan(32) { ; }
+    LAURPLidarObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent), scanState(StateNotScanning), scan(32) { ; }
     ~LAURPLidarObject();
 
 public slots:
@@ -83,13 +83,14 @@ private:
     int versionMajor;
     int hardware;
     QByteArray serialNumber;
+    QVector<QPoint> scan;
 
     void sendNextMessage();
-    QPointF getPoint(int A, int dA, int D);
+    QPoint getPoint(int A, int dA, int D);
 
 signals:
     void emitError(QString string);
-    void emitPoint(QPointF pt);
+    void emitScan(QVector<QPoint> pts);
 };
 
 /****************************************************************************/
@@ -104,6 +105,8 @@ public:
 
 public slots:
     void onAddPoint(QPoint pt);
+    void onAddPoints(QList<QPoint> pts);
+    void onAddPoints(QVector<QPoint> pts);
     void onSavePoints();
     void onEnableSavePoints(bool state);
 
@@ -113,7 +116,7 @@ protected:
 
 private:
     bool savePointsFlag;
-    QList<QPoint> pts;
+    QList<QPoint> points;
     QPoint topLeft;
     QPoint bottomRight;
     QMenu *contextMenu;
@@ -129,8 +132,14 @@ class LAURPLidarWidget : public QWidget
     Q_OBJECT
 
 public:
-    LAURPLidarWidget(QWidget *parent = 0);
+    LAURPLidarWidget(QString portString = QString(), QWidget *parent = 0);
+    LAURPLidarWidget(QString ipAddr, int portNum, QWidget *parent = 0);
     ~LAURPLidarWidget();
+
+    bool isValid()
+    {
+        return (object && object->isValid());
+    }
 
 protected:
     void showEvent(QShowEvent *);
@@ -148,13 +157,13 @@ class LAURPLidarDialog : public QDialog
     Q_OBJECT
 
 public:
-    LAURPLidarDialog(QWidget *parent = 0) : QDialog(parent)
+    LAURPLidarDialog(QString portString = QString(), QWidget *parent = 0) : QDialog(parent)
     {
         this->setLayout(new QVBoxLayout());
         this->layout()->setContentsMargins(6, 6, 6, 6);
         this->setWindowTitle(QString("LAURPLidar Dialog"));
 
-        widget = new LAURPLidarWidget();
+        widget = new LAURPLidarWidget(portString);
         this->layout()->addWidget(widget);
 
         QDialogButtonBox *box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -163,7 +172,25 @@ public:
         this->layout()->addWidget(box);
     }
 
-    //bool isValid() { return(widget->isValid()); }
+    LAURPLidarDialog(QString ipAddr, int portNum, QWidget *parent = 0) : QDialog(parent)
+    {
+        this->setLayout(new QVBoxLayout());
+        this->layout()->setContentsMargins(6, 6, 6, 6);
+        this->setWindowTitle(QString("LAURPLidar Dialog"));
+
+        widget = new LAURPLidarWidget(ipAddr, portNum);
+        this->layout()->addWidget(widget);
+
+        QDialogButtonBox *box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+        connect(box->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(accept()));
+        connect(box->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
+        this->layout()->addWidget(box);
+    }
+
+    bool isValid()
+    {
+        return (widget->isValid());
+    }
 
 public slots:
 
