@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
     //LAUKeyenceWidget w(QString(""));
     //LAURobotWidget w;
 
-    //LAUTCPSerialPortServer s(-1, 60000);
-    LAURPLidarDialog w;
+    LAUTCPSerialPortServer s(-1, 60000);
+    LAURPLidarDialog w(QString(), -1, NULL);
     if (w.isValid()) {
         return (w.exec());
     }

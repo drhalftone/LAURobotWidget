@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QtCore>
 #include <QDebug>
+#include <QTimer>
 #include <QWidget>
 #include <QThread>
 #include <QPainter>
@@ -65,6 +66,7 @@ public slots:
     void onForceScan();
     void onExpressScan();
     void onGetSampleRate();
+    void onInitiateScanning();
 
 private:
     typedef struct {
@@ -82,11 +84,14 @@ private:
     int versionMinor;
     int versionMajor;
     int hardware;
+    double angleA, angleB;
     QByteArray serialNumber;
     QVector<QPoint> scan;
 
-    void sendNextMessage();
-    QPoint getPoint(int A, int dA, int D);
+    QPoint getPoint(double Aa, double Ab, double dA, double D, int k);
+
+private slots:
+    void onSendNextMessage();
 
 signals:
     void emitError(QString string);
