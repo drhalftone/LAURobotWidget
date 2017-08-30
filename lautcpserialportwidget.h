@@ -22,8 +22,17 @@
 
 #ifdef LAU_CLIENT
 #include <QInputDialog>
-#endif
+
 #include "lauzeroconfwidget.h"
+#else
+#include <QObject>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QSerialPort>
+#include <QSerialPortInfo>
+
+#include <qzeroconf.h>
+#endif
 
 #define LAUTCPSERIALPORTSERVERPORTNUMER  11364
 

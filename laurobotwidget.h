@@ -20,15 +20,6 @@
 #ifndef LAUBUTTONWIDGET_H
 #define LAUBUTTONWIDGET_H
 
-#include <QList>
-#include <QDebug>
-#include <QThread>
-#include <QSerialPort>
-#include <QSerialPortInfo>
-
-#include "lautcpserialportwidget.h"
-
-#ifdef LAU_CLIENT
 #include <QWidget>
 #include <QGroupBox>
 #include <QMessageBox>
@@ -38,10 +29,14 @@
 #include <QApplication>
 #include <QInputDialog>
 
+#include <QList>
+#include <QDebug>
+#include <QThread>
+#include <QSerialPort>
+#include <QSerialPortInfo>
+
 #include "laupalettewidget.h"
-#else
-#include <QCoreApplication>
-#endif
+#include "lautcpserialportwidget.h"
 
 #define LAUROBOT_WIDGETADDRESS                        128
 #define LAUROBOT_NULLMESSAGESENT                       -1
@@ -143,7 +138,6 @@ signals:
     void emitMessage(int message, void *argument = NULL);
 };
 
-#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -172,6 +166,5 @@ private:
 signals:
     void emitMessage(int message, void *argument = NULL);
 };
-#endif
 
 #endif // LAUBUTTONWIDGET_H

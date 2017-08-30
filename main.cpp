@@ -17,16 +17,17 @@
 
 **************************************************************************************************/
 
+#ifdef LAU_CLIENT
+#include <QApplication>
+
 #include "laukeyencewidget.h"
 #include "laurobotwidget.h"
 #include "laurplidarwidget.h"
-#include "lautcpserialportwidget.h"
-
-#ifdef LAU_CLIENT
-#include <QApplication>
 #else
 #include <QCoreApplication>
 #endif
+
+#include "lautcpserialportwidget.h"
 
 int main(int argc, char *argv[])
 {

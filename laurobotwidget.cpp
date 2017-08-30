@@ -18,7 +18,6 @@
 **************************************************************************************************/
 #include "laurobotwidget.h"
 
-#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -154,7 +153,8 @@ void LAURobotWidget::onTCPError(QString string)
 /****************************************************************************/
 void LAURobotWidget::onReceiveMessage(int message, void *argument)
 {
-    ;
+    Q_UNUSED(message);
+    Q_UNUSED(argument);
 }
 
 /****************************************************************************/
@@ -165,7 +165,6 @@ void LAURobotWidget::showEvent(QShowEvent *)
     // SEND THE INITIAL HANDSHAKE MESSAGES
     emit emitMessage(LAUROBOT_READFIRMWAREVERSION);
 }
-#endif
 
 /****************************************************************************/
 /****************************************************************************/
@@ -286,7 +285,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
     // MAKE SURE WE HAVE AN OPEN PORT BEFORE BUILDING OUR MESSAGE
     if (isValid()) {
         // CREATE A CHARACTER BUFFER TO HOLD THE MESSAGE
-        QByteArray byteArray(1, LAUROBOT_WIDGETADDRESS);
+        QByteArray byteArray(1, (char)LAUROBOT_WIDGETADDRESS);
 
         if (message == LAUROBOT_DRIVEFORWARDMOTOR1) {
             byteArray.append((char)LAUROBOT_DRIVEFORWARDMOTOR1);

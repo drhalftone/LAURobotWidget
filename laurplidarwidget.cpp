@@ -7,7 +7,6 @@ const char LAURPLIDAR_INFO_HEADER[7] = { (char)0xA5, (char)0x5A, (char)0x14, (ch
 const char LAURPLIDAR_HEALTH_HEADER[7] = { (char)0xA5, (char)0x5A, (char)0x03, (char)0x00, (char)0x00, (char)0x00, (char)0x06 };
 const char LAURPLIDAR_SAMPLERATE[7] = { (char)0xA5, (char)0x5A, (char)0x04, (char)0x00, (char)0x00, (char)0x00, (char)0x15 };
 
-#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -669,4 +668,3 @@ int LAURPLidarObject::decodeMessageHeader(QByteArray byteArray)
         return (-1);
     }
 }
-#endif

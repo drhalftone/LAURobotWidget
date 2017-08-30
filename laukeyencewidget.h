@@ -19,14 +19,6 @@
 #ifndef LAUKEYENCEWIDGET_H
 #define LAUKEYENCEWIDGET_H
 
-#include <QList>
-#include <QDebug>
-#include <QThread>
-#include <QSerialPort>
-#include <QAbstractSocket>
-#include <QSerialPortInfo>
-
-#ifdef LAU_CLIENT
 #include <QWidget>
 #include <QGroupBox>
 #include <QMessageBox>
@@ -35,7 +27,13 @@
 #include <QHBoxLayout>
 #include <QApplication>
 #include <QInputDialog>
-#endif
+
+#include <QList>
+#include <QDebug>
+#include <QThread>
+#include <QSerialPort>
+#include <QAbstractSocket>
+#include <QSerialPortInfo>
 
 #include "lauzeroconfwidget.h"
 
@@ -90,7 +88,6 @@ signals:
     void emitMessage(int message, void *argument = NULL);
 };
 
-#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -116,5 +113,5 @@ private:
 signals:
     void emitMessage(int message, void *argument = NULL);
 };
-#endif
+
 #endif // LAUKEYENCEWIDGET_H

@@ -17,11 +17,15 @@
 #
 #**************************************************************************************************/
 CONFIG  += server
-CONFIG  += client
+CONFIG  -= client
 
 QT      += core serialport network
 
 TEMPLATE = app
+
+SOURCES += main.cpp \
+           lautcpserialportwidget.cpp
+HEADERS += lautcpserialportwidget.h
 
 server {
     TARGET   = RoboServer
@@ -32,8 +36,15 @@ client {
     TARGET   = RoboClient
     DEFINES += LAU_CLIENT
     QT      += gui widgets
-    SOURCES += laupalettewidget.cpp
-    HEADERS += laupalettewidget.h
+    SOURCES += laurobotwidget.cpp \
+               laupalettewidget.cpp \
+               lauzeroconfwidget.cpp \
+               laurplidarwidget.cpp
+    HEADERS += laurobotwidget.h \
+               laupalettewidget.h \
+               lauzeroconfwidget.h \
+               laurplidarwidget.h
+    RESOURCES += laupalettegear.qrc
 }
 
 # INCLUDE BONJOUR
@@ -51,19 +62,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
-SOURCES += main.cpp \
-           laurobotwidget.cpp \
-           lauzeroconfwidget.cpp \
-           lautcpserialportwidget.cpp \
-           laurplidarwidget.cpp
-
-HEADERS += laurobotwidget.h \
-           lauzeroconfwidget.h \
-           lautcpserialportwidget.h \
-           laurplidarwidget.h
-
-RESOURCES += laupalettegear.qrc
 
 #unix:macx {
 #    QMAKE_MAC_SDK   = macosx10.12

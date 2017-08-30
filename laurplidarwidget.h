@@ -1,6 +1,17 @@
 #ifndef LAURPLIDARWIDGET_H
 #define LAURPLIDARWIDGET_H
 
+#include <QMenu>
+#include <QWidget>
+#include <QGroupBox>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QFileDialog>
+#include <QApplication>
+#include <QInputDialog>
+
 #include <QTime>
 #include <QList>
 #include <QtCore>
@@ -14,19 +25,6 @@
 #include <QStandardPaths>
 #include <QSerialPortInfo>
 
-#ifdef LAU_CLIENT
-#include <QMenu>
-#include <QWidget>
-#include <QGroupBox>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFileDialog>
-#include <QApplication>
-#include <QInputDialog>
-#endif
-
 #include "lautcpserialportwidget.h"
 
 #define LAURPLIDAR_FIXED_BYTE     0xA5
@@ -39,7 +37,6 @@
 #define LAURPLIDAR_GET_HEALTH     0x52
 #define LAURPLIDAR_GET_SAMPLERATE 0x59
 
-#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -206,5 +203,5 @@ public slots:
 private:
     LAURPLidarWidget *widget;
 };
-#endif
+
 #endif // LAURPLIDARWIDGET_H
