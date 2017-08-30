@@ -2,8 +2,8 @@
 #define LAUPALETTEGEARWIDGET_H
 
 #include <QtCore>
-#include <QLabel>
 #include <QImage>
+#include <QLabel>
 #include <QPainter>
 #include <QtWidgets>
 #include <QtSerialPort>
@@ -31,18 +31,22 @@ public:
     {
         return (paletteType);
     }
+
     unsigned int identity() const
     {
         return (paletteID);
     }
+
     QTransform position() const
     {
         return (transform);
     }
+
     void setPosition(QTransform tran)
     {
         transform = tran;
     }
+
     virtual void draw(QPainter *painter) const = 0;
 
     static QTransform neighborTransform(int i, QTransform transform);

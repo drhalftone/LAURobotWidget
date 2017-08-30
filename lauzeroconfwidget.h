@@ -20,23 +20,27 @@
 #ifndef LAUZEROCONFWIDGET_H
 #define LAUZEROCONFWIDGET_H
 
-#include <QLabel>
 #include <QObject>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QSerialPort>
+#include <QSerialPortInfo>
+
+#ifdef LAU_CLIENT
+#include <QLabel>
 #include <QWidget>
 #include <QDialog>
 #include <QGroupBox>
 #include <QComboBox>
-#include <QTcpServer>
-#include <QTcpSocket>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
-#include <QSerialPort>
-#include <QSerialPortInfo>
 #include <QDialogButtonBox>
+#endif
 
 #include <qzeroconf.h>
 
+#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -134,5 +138,5 @@ private:
     QString ipString, serviceString;
     int portNumber;
 };
-
+#endif
 #endif // LAUZEROCONFWIDGET_H

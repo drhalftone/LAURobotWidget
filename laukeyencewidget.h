@@ -21,18 +21,21 @@
 
 #include <QList>
 #include <QDebug>
-#include <QWidget>
 #include <QThread>
+#include <QSerialPort>
+#include <QAbstractSocket>
+#include <QSerialPortInfo>
+
+#ifdef LAU_CLIENT
+#include <QWidget>
 #include <QGroupBox>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QSerialPort>
 #include <QApplication>
 #include <QInputDialog>
-#include <QAbstractSocket>
-#include <QSerialPortInfo>
+#endif
 
 #include "lauzeroconfwidget.h"
 
@@ -87,6 +90,7 @@ signals:
     void emitMessage(int message, void *argument = NULL);
 };
 
+#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -112,5 +116,5 @@ private:
 signals:
     void emitMessage(int message, void *argument = NULL);
 };
-
+#endif
 #endif // LAUKEYENCEWIDGET_H

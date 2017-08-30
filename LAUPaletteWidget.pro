@@ -16,11 +16,25 @@
 #    along with LAURobotWidget.  If not, see <http://www.gnu.org/licenses/>.
 #
 #**************************************************************************************************/
+CONFIG  += server
+CONFIG  += client
 
-QT      += core gui widgets serialport network
+QT      += core serialport network
 
-TARGET   = RoboWidget
 TEMPLATE = app
+
+server {
+    TARGET   = RoboServer
+    DEFINES += LAU_SERVER
+}
+
+client {
+    TARGET   = RoboClient
+    DEFINES += LAU_CLIENT
+    QT      += gui widgets
+    SOURCES += laupalettewidget.cpp
+    HEADERS += laupalettewidget.h
+}
 
 # INCLUDE BONJOUR
 #include(QtZeroConf/qtzeroconf.pri)
@@ -42,13 +56,11 @@ SOURCES += main.cpp \
            laurobotwidget.cpp \
            lauzeroconfwidget.cpp \
            lautcpserialportwidget.cpp \
-           laupalettewidget.cpp \
            laurplidarwidget.cpp
 
 HEADERS += laurobotwidget.h \
            lauzeroconfwidget.h \
            lautcpserialportwidget.h \
-           laupalettewidget.h \
            laurplidarwidget.h
 
 RESOURCES += laupalettegear.qrc

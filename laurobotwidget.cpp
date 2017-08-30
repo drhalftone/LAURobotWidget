@@ -18,6 +18,7 @@
 **************************************************************************************************/
 #include "laurobotwidget.h"
 
+#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -164,112 +165,7 @@ void LAURobotWidget::showEvent(QShowEvent *)
     // SEND THE INITIAL HANDSHAKE MESSAGES
     emit emitMessage(LAUROBOT_READFIRMWAREVERSION);
 }
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-LAURobotObject::LAURobotObject(QString portString, QObject *parent) : QObject(parent), ipAddress(portString), portNumber(-1), port(NULL), firmwareString(QString("DEMO"))
-{
-    if (portString.isEmpty()) {
-        // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
-        QStringList ports;
-        QList<QSerialPortInfo> portList = QSerialPortInfo::availablePorts();
-        for (int m = 0; m < portList.count(); m++) {
-            ports << portList.at(m).portName();
-            for (int n = portList.count() - 1; n > m; n--) {
-                if (portList.at(n).description() == portList.at(m).description() &&
-                    portList.at(n).manufacturer() == portList.at(m).manufacturer() &&
-                    portList.at(n).vendorIdentifier() == portList.at(m).vendorIdentifier() &&
-                    portList.at(n).productIdentifier() == portList.at(m).productIdentifier()) {
-                    portList.removeAt(n);
-                }
-            }
-        }
-
-        // ASK THE USER WHICH PORT SHOULD WE USE AND THEN TRY TO CONNECT
-        bool okay = false;
-        portString = QInputDialog::getItem(NULL, QString("RoboClaw"), QString("Select RoboClaw Port"), ports, 0, false, &okay);
-        if (okay == false) {
-            emit emitError(QString("Connection to RoboClaw canceled by user."));
-        }
-    }
-
-    if (portString.isEmpty() == false) {
-        // CREATE A SERIAL PORT OBJECT
-        port = new QSerialPort();
-
-        // SET THE SERIAL PORT SETTINGS
-        ((QSerialPort *)port)->setPortName(portString);
-        ((QSerialPort *)port)->setBaudRate(QSerialPort::Baud115200);
-        ((QSerialPort *)port)->setDataBits(QSerialPort::Data8);
-        ((QSerialPort *)port)->setStopBits(QSerialPort::OneStop);
-        ((QSerialPort *)port)->setParity(QSerialPort::NoParity);
-        ((QSerialPort *)port)->setFlowControl(QSerialPort::NoFlowControl);
-    }
-}
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-LAURobotObject::LAURobotObject(QString ipAddr, int portNum, QObject *parent) : QObject(parent), ipAddress(ipAddr), portNumber(portNum), port(NULL), firmwareString(QString("DEMO"))
-{
-    if (ipAddress.isEmpty()) {
-        // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
-        LAUZeroConfClientDialog dialog(QString("_lautcpserialportserver._tcp"));
-        if (dialog.exec()) {
-            ipAddress = dialog.address();
-            portNumber = dialog.port();
-        }
-    }
-
-    // CREATE A TCP SOCKET OBJECT
-    if (ipAddress.isEmpty() == false) {
-        port = new QTcpSocket();
-        connect(((QTcpSocket *)port), SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-        connect(((QTcpSocket *)port), SIGNAL(connected()), this, SLOT(onConnected()));
-        connect(((QTcpSocket *)port), SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-        connect(((QTcpSocket *)port), SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onTcpError(QAbstractSocket::SocketError)));
-    }
-}
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-bool LAURobotObject::connectPort()
-{
-    // MAKE SURE WE HAVE WHAT WE NEED FOR A CONNECTION
-    if (port) {
-        // CREATE A NEW CONNECTION OR OPEN THE SERIAL PORT FOR COMMUNICATION
-        if (dynamic_cast<QTcpSocket *>(port) != NULL) {
-            ((QTcpSocket *)port)->connectToHost(ipAddress, portNumber, QIODevice::ReadWrite);
-            if (((QTcpSocket *)port)->waitForConnected(3000) == false) {
-                errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
-                emit emitError(errorString);
-            } else if (!port->isReadable()) {
-                errorString = QString("Port is not readable!\n") + port->errorString();
-                emit emitError(errorString);
-            } else {
-                connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-                return (true);
-            }
-        } else {
-            if (!port->open(QIODevice::ReadWrite)) {
-                errorString = QString("Cannot connect to RoboClaw.\n") + port->errorString();
-                emit emitError(errorString);
-            } else if (!port->isReadable()) {
-                errorString = QString("Port is not readable!\n") + port->errorString();
-                emit emitError(errorString);
-            } else {
-                connect(port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-                return (true);
-            }
-        }
-    } else {
-        errorString = QString("No valid serial port or IP address.\n");
-        emit emitError(errorString);
-    }
-    return (false);
-}
+#endif
 
 /****************************************************************************/
 /****************************************************************************/
@@ -277,13 +173,10 @@ bool LAURobotObject::connectPort()
 LAURobotObject::~LAURobotObject()
 {
     // CLOSE THE SERIAL PORT IF IT IS CURRENTLY OPEN
-    if (port && port->isOpen()) {
+    if (isValid()) {
         unsigned char val = 0;
         onSendMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
         onSendMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
-        port->waitForBytesWritten(1000);
-        qApp->processEvents();
-        port->close();
     }
 }
 
@@ -391,112 +284,110 @@ void LAURobotObject::onTcpError(QAbstractSocket::SocketError error)
 void LAURobotObject::onSendMessage(int message, void *argument)
 {
     // MAKE SURE WE HAVE AN OPEN PORT BEFORE BUILDING OUR MESSAGE
-    if (!port || port->isOpen() == false) {
-        return;
-    }
+    if (isValid()) {
+        // CREATE A CHARACTER BUFFER TO HOLD THE MESSAGE
+        QByteArray byteArray(1, LAUROBOT_WIDGETADDRESS);
 
-    // CREATE A CHARACTER BUFFER TO HOLD THE MESSAGE
-    QByteArray byteArray(1, LAUROBOT_WIDGETADDRESS);
-
-    if (message == LAUROBOT_DRIVEFORWARDMOTOR1) {
-        byteArray.append((char)LAUROBOT_DRIVEFORWARDMOTOR1);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_DRIVEBACKWARDSMOTOR1) {
-        byteArray.append((char)LAUROBOT_DRIVEBACKWARDSMOTOR1);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_SETMAINVOLTAGEMINIMUM) {
-    } else if (message == LAUROBOT_SETMAINVOLTAGEMAXIMUM) {
-    } else if (message == LAUROBOT_DRIVEFORWARDMOTOR2) {
-        byteArray.append((char)LAUROBOT_DRIVEFORWARDMOTOR2);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_DRIVEBACKWARDSMOTOR2) {
-        byteArray.append((char)LAUROBOT_DRIVEBACKWARDSMOTOR2);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_DRIVEMOTOR1_7BIT) {
-        byteArray.append((char)LAUROBOT_DRIVEMOTOR1_7BIT);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_DRIVEMOTOR2_7BIT) {
-        byteArray.append((char)LAUROBOT_DRIVEMOTOR2_7BIT);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_DRIVEFORWARDMIXEDMODE) {
-    } else if (message == LAUROBOT_DRIVEBACKWARDSMIXEDMODE) {
-    } else if (message == LAUROBOT_TURNRIGHTMIXEDMODE) {
-    } else if (message == LAUROBOT_TURNLEFTMIXEDMODE) {
-    } else if (message == LAUROBOT_DRIVEFORWARDORBACKWARD_7BIT) {
-        byteArray.append((char)LAUROBOT_DRIVEFORWARDORBACKWARD_7BIT);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_TURNLEFTORRIGHT_7BIT) {
-        byteArray.append((char)LAUROBOT_TURNLEFTORRIGHT_7BIT);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_READFIRMWAREVERSION) {
-        byteArray.append((char)LAUROBOT_READFIRMWAREVERSION);
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_READMAINBATTERYVOLTAGE) {
-        byteArray.append((char)LAUROBOT_READMAINBATTERYVOLTAGE);
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_SETMINLOGICVOLTAGELEVEL) {
-        byteArray.append((char)LAUROBOT_SETMINLOGICVOLTAGELEVEL);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_SETMAXLOGICVOLTAGELEVEL) {
-        byteArray.append((char)LAUROBOT_SETMAXLOGICVOLTAGELEVEL);
-        byteArray.append((char *)argument, sizeof(char));
-        port->write(appendCRC(byteArray, CRCSend));
-        messageIDList.append(message);
-    } else if (message == LAUROBOT_READMOTORPWMS) {
-    } else if (message == LAUROBOT_READMOTORCURRENTS) {
-    } else if (message == LAUROBOT_SETMAINBATTERYVOLTAGES) {
-    } else if (message == LAUROBOT_SETLOGICBATTERYVOLTAGES) {
-    } else if (message == LAUROBOT_READMAINBATTERYVOLTAGESETTINGS) {
-    } else if (message == LAUROBOT_READLOGICBATTERYVOLTAGESETTINGS) {
-    } else if (message == LAUROBOT_SETDEFAULTDUTYCYCLEACCELERATIONFORM1) {
-    } else if (message == LAUROBOT_SETDEFAULTDUTYCYCLEACCELERATIONFORM2) {
-    } else if (message == LAUROBOT_SETS3S4ANDS5MODES) {
-    } else if (message == LAUROBOT_READS3S4ANDS5MODES) {
-    } else if (message == LAUROBOT_SETDEADBANDFORRCANALOGCONTROLS) {
-    } else if (message == LAUROBOT_READDEADBANDFORRCANALOGCONTROLS) {
-    } else if (message == LAUROBOT_RESTOREDEFAULTS) {
-    } else if (message == LAUROBOT_READDEFAULTDUTYCYCLEACCELERATIONS) {
-    } else if (message == LAUROBOT_READTEMPERATURE) {
-    } else if (message == LAUROBOT_READTEMPERATURE2) {
-    } else if (message == LAUROBOT_READSTATUS) {
-    } else if (message == LAUROBOT_READENCODERMODES) {
-    } else if (message == LAUROBOT_SETMOTOR1ENCODERMODE) {
-    } else if (message == LAUROBOT_SETMOTOR2ENCODERMODE) {
-    } else if (message == LAUROBOT_WRITESETTINGSTOEEPROM) {
-    } else if (message == LAUROBOT_READSETTINGSFROMEEPROM) {
-    } else if (message == LAUROBOT_SETSTANDARDCONGSETTINGS) {
-    } else if (message == LAUROBOT_READSTANDARDCONGSETTINGS) {
-    } else if (message == LAUROBOT_SETCTRLMODES) {
-    } else if (message == LAUROBOT_READCTRLMODES) {
-    } else if (message == LAUROBOT_SETCTRL1) {
-    } else if (message == LAUROBOT_SETCTRL2) {
-    } else if (message == LAUROBOT_READCTRLS) {
-    } else if (message == LAUROBOT_SETM1MAXIMUMCURRENT) {
-    } else if (message == LAUROBOT_SETM2MAXIMUMCURRENT) {
-    } else if (message == LAUROBOT_READM1MAXIMUMCURRENT) {
-    } else if (message == LAUROBOT_READM2MAXIMUMCURRENT) {
-    } else if (message == LAUROBOT_SETPWMMODE) {
-    } else if (message == LAUROBOT_READPWMMODE) {
+        if (message == LAUROBOT_DRIVEFORWARDMOTOR1) {
+            byteArray.append((char)LAUROBOT_DRIVEFORWARDMOTOR1);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_DRIVEBACKWARDSMOTOR1) {
+            byteArray.append((char)LAUROBOT_DRIVEBACKWARDSMOTOR1);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_SETMAINVOLTAGEMINIMUM) {
+        } else if (message == LAUROBOT_SETMAINVOLTAGEMAXIMUM) {
+        } else if (message == LAUROBOT_DRIVEFORWARDMOTOR2) {
+            byteArray.append((char)LAUROBOT_DRIVEFORWARDMOTOR2);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_DRIVEBACKWARDSMOTOR2) {
+            byteArray.append((char)LAUROBOT_DRIVEBACKWARDSMOTOR2);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_DRIVEMOTOR1_7BIT) {
+            byteArray.append((char)LAUROBOT_DRIVEMOTOR1_7BIT);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_DRIVEMOTOR2_7BIT) {
+            byteArray.append((char)LAUROBOT_DRIVEMOTOR2_7BIT);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_DRIVEFORWARDMIXEDMODE) {
+        } else if (message == LAUROBOT_DRIVEBACKWARDSMIXEDMODE) {
+        } else if (message == LAUROBOT_TURNRIGHTMIXEDMODE) {
+        } else if (message == LAUROBOT_TURNLEFTMIXEDMODE) {
+        } else if (message == LAUROBOT_DRIVEFORWARDORBACKWARD_7BIT) {
+            byteArray.append((char)LAUROBOT_DRIVEFORWARDORBACKWARD_7BIT);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_TURNLEFTORRIGHT_7BIT) {
+            byteArray.append((char)LAUROBOT_TURNLEFTORRIGHT_7BIT);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_READFIRMWAREVERSION) {
+            byteArray.append((char)LAUROBOT_READFIRMWAREVERSION);
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_READMAINBATTERYVOLTAGE) {
+            byteArray.append((char)LAUROBOT_READMAINBATTERYVOLTAGE);
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_SETMINLOGICVOLTAGELEVEL) {
+            byteArray.append((char)LAUROBOT_SETMINLOGICVOLTAGELEVEL);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_SETMAXLOGICVOLTAGELEVEL) {
+            byteArray.append((char)LAUROBOT_SETMAXLOGICVOLTAGELEVEL);
+            byteArray.append((char *)argument, sizeof(char));
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        } else if (message == LAUROBOT_READMOTORPWMS) {
+        } else if (message == LAUROBOT_READMOTORCURRENTS) {
+        } else if (message == LAUROBOT_SETMAINBATTERYVOLTAGES) {
+        } else if (message == LAUROBOT_SETLOGICBATTERYVOLTAGES) {
+        } else if (message == LAUROBOT_READMAINBATTERYVOLTAGESETTINGS) {
+        } else if (message == LAUROBOT_READLOGICBATTERYVOLTAGESETTINGS) {
+        } else if (message == LAUROBOT_SETDEFAULTDUTYCYCLEACCELERATIONFORM1) {
+        } else if (message == LAUROBOT_SETDEFAULTDUTYCYCLEACCELERATIONFORM2) {
+        } else if (message == LAUROBOT_SETS3S4ANDS5MODES) {
+        } else if (message == LAUROBOT_READS3S4ANDS5MODES) {
+        } else if (message == LAUROBOT_SETDEADBANDFORRCANALOGCONTROLS) {
+        } else if (message == LAUROBOT_READDEADBANDFORRCANALOGCONTROLS) {
+        } else if (message == LAUROBOT_RESTOREDEFAULTS) {
+        } else if (message == LAUROBOT_READDEFAULTDUTYCYCLEACCELERATIONS) {
+        } else if (message == LAUROBOT_READTEMPERATURE) {
+        } else if (message == LAUROBOT_READTEMPERATURE2) {
+        } else if (message == LAUROBOT_READSTATUS) {
+        } else if (message == LAUROBOT_READENCODERMODES) {
+        } else if (message == LAUROBOT_SETMOTOR1ENCODERMODE) {
+        } else if (message == LAUROBOT_SETMOTOR2ENCODERMODE) {
+        } else if (message == LAUROBOT_WRITESETTINGSTOEEPROM) {
+        } else if (message == LAUROBOT_READSETTINGSFROMEEPROM) {
+        } else if (message == LAUROBOT_SETSTANDARDCONGSETTINGS) {
+        } else if (message == LAUROBOT_READSTANDARDCONGSETTINGS) {
+        } else if (message == LAUROBOT_SETCTRLMODES) {
+        } else if (message == LAUROBOT_READCTRLMODES) {
+        } else if (message == LAUROBOT_SETCTRL1) {
+        } else if (message == LAUROBOT_SETCTRL2) {
+        } else if (message == LAUROBOT_READCTRLS) {
+        } else if (message == LAUROBOT_SETM1MAXIMUMCURRENT) {
+        } else if (message == LAUROBOT_SETM2MAXIMUMCURRENT) {
+        } else if (message == LAUROBOT_READM1MAXIMUMCURRENT) {
+        } else if (message == LAUROBOT_READM2MAXIMUMCURRENT) {
+        } else if (message == LAUROBOT_SETPWMMODE) {
+        } else if (message == LAUROBOT_READPWMMODE) {
+        }
     }
     return;
 }
@@ -507,9 +398,9 @@ void LAURobotObject::onSendMessage(int message, void *argument)
 void LAURobotObject::onReadyRead()
 {
     // KEEP READING FROM THE PORT UNTIL THERE ARE NO MORE BYTES TO READ
-    while (port->bytesAvailable() > 0) {
+    while (bytesAvailable() > 0) {
         // READ THE CURRENTLY AVAILABLE BYTES FROM THE PORT
-        QByteArray byteArray = port->readAll();
+        QByteArray byteArray = readAll();
         if (byteArray.isEmpty() == false) {
             // APPEND INCOMING BYTE ARRAY TO ALL SITTING BYTES
             messageArray.append(byteArray);
@@ -541,8 +432,8 @@ bool LAURobotObject::processMessage()
                     firmwareString = QString(messageArray.left(index));
                     emit emitMessage(message);
                 } else {
-                    errorString = QString("ERROR receiving LAUROBOT_READFIRMWAREVERSION message!");
-                    emit emitError(errorString);
+                    setError(QString("ERROR receiving LAUROBOT_READFIRMWAREVERSION message!"));
+                    emit emitError(error());
                 }
                 messageArray = messageArray.remove(0, index + 4);
                 messageIDList.takeFirst();
@@ -555,8 +446,8 @@ bool LAURobotObject::processMessage()
                 if (checkCRC(messageArray, CRCReceive)) {
                     emit emitMessage(message);
                 } else {
-                    errorString = QString("ERROR receiving LAUROBOT_READMAINBATTERYVOLTAGE message!");
-                    emit emitError(errorString);
+                    setError(QString("ERROR receiving LAUROBOT_READMAINBATTERYVOLTAGE message!"));
+                    emit emitError(error());
                 }
                 messageArray = messageArray.remove(0, 3);
                 messageIDList.takeFirst();
@@ -575,8 +466,8 @@ bool LAURobotObject::processMessage()
                 if ((unsigned char)messageArray.at(0) == 0xff) {
                     emit emitMessage(message);
                 } else {
-                    errorString = QString("ERROR sending LAUROBOT_DRIVEFORWARDMOTOR1 message!");
-                    emit emitError(errorString);
+                    setError(QString("ERROR sending LAUROBOT_DRIVEFORWARDMOTOR1 message!"));
+                    emit emitError(error());
                 }
                 messageArray = messageArray.remove(0, 1);
                 messageIDList.takeFirst();

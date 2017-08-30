@@ -22,19 +22,26 @@
 
 #include <QList>
 #include <QDebug>
-#include <QWidget>
 #include <QThread>
+#include <QSerialPort>
+#include <QSerialPortInfo>
+
+#include "lautcpserialportwidget.h"
+
+#ifdef LAU_CLIENT
+#include <QWidget>
 #include <QGroupBox>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QSerialPort>
 #include <QApplication>
 #include <QInputDialog>
-#include <QSerialPortInfo>
 
 #include "laupalettewidget.h"
+#else
+#include <QCoreApplication>
+#endif
 
 #define LAUROBOT_WIDGETADDRESS                        128
 #define LAUROBOT_NULLMESSAGESENT                       -1
@@ -95,57 +102,37 @@
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-class LAURobotObject : public QObject
+class LAURobotObject : public LAUTCPSerialPortClient
 {
     Q_OBJECT
 
 public:
-    LAURobotObject(QString portString, QObject *parent = 0);
-    LAURobotObject(QString ipAddr, int portNum, QObject *parent = 0);
+    LAURobotObject(QString portString, QObject *parent) : LAUTCPSerialPortClient(portString, parent), firmwareString(QString("DEMO")) { ; }
+    LAURobotObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent), firmwareString(QString("DEMO")) { ; }
     ~LAURobotObject();
-
-    bool connectPort();
-
-    bool isValid() const
-    {
-        if (port) {
-            return (port->isOpen());
-        }
-        return (false);
-    }
 
     QString firmware() const
     {
         return (firmwareString);
     }
 
-    QString error() const
-    {
-        return (errorString);
-    }
-
 public slots:
     void onSendMessage(int message, void *argument = NULL);
+    void onReadyRead();
+    void onConnected();
+    void onDisconnected();
 
 private:
     enum CRC { CRCSend, CRCReceive };
 
-    QString ipAddress;
-    int portNumber;
-    QIODevice *port;
-    QString errorString;
     QList<unsigned short> crcList;
     QList<int> messageIDList;
     QByteArray messageArray;
-
     QString firmwareString;
 
     bool processMessage();
 
 private slots:
-    void onReadyRead();
-    void onConnected();
-    void onDisconnected();
     void onTcpError(QAbstractSocket::SocketError error);
 
     QByteArray appendCRC(QByteArray byteArray, CRC state);
@@ -156,6 +143,7 @@ signals:
     void emitMessage(int message, void *argument = NULL);
 };
 
+#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -184,5 +172,6 @@ private:
 signals:
     void emitMessage(int message, void *argument = NULL);
 };
+#endif
 
 #endif // LAUBUTTONWIDGET_H

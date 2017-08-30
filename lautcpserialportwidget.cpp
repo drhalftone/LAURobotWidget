@@ -197,6 +197,7 @@ void LAUTCPSerialPort::onServicePublished()
 /******************************************************************************/
 void LAUTCPSerialPort::onServiceError(QZeroConf::error_t error)
 {
+#ifdef LAU_CLIENT
     switch (error) {
         case QZeroConf::noError:
             break;
@@ -210,6 +211,7 @@ void LAUTCPSerialPort::onServiceError(QZeroConf::error_t error)
             QMessageBox::warning(NULL, portString, QString("Zero Conf Server Error: Browser failed!"), QMessageBox::Ok);
             break;
     }
+#endif
 }
 
 /******************************************************************************/
@@ -232,6 +234,7 @@ void LAUTCPSerialPort::onTcpError(QAbstractSocket::SocketError error)
     }
 }
 
+#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -374,3 +377,4 @@ void LAUTCPSerialPortClient::onTcpError(QAbstractSocket::SocketError error)
             break;
     }
 }
+#endif

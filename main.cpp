@@ -21,23 +21,38 @@
 #include "laurobotwidget.h"
 #include "laurplidarwidget.h"
 #include "lautcpserialportwidget.h"
+
+#ifdef LAU_CLIENT
 #include <QApplication>
+#else
+#include <QCoreApplication>
+#endif
 
 int main(int argc, char *argv[])
 {
+#ifdef LAU_CLIENT
     QApplication a(argc, argv);
-    a.setQuitOnLastWindowClosed(false);
+    a.setQuitOnLastWindowClosed(true);
+#else
+    QCoreApplication a(argc, argv);
+#endif
     a.setOrganizationName(QString("Lau Consulting Inc"));
     a.setOrganizationDomain(QString("drhalftone.com"));
-    a.setQuitOnLastWindowClosed(true);
 
     //LAUKeyenceWidget w(QString(""));
     //LAURobotWidget w;
 
+#ifdef LAU_SERVER
     LAUTCPSerialPortServer s(-1, 60000);
+#endif
+
+#ifdef LAU_CLIENT
     LAURPLidarDialog w(QString(), -1, NULL);
     if (w.isValid()) {
         return (w.exec());
     }
     return (0);
+#else
+    return (a.exec());
+#endif
 }

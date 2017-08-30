@@ -20,8 +20,9 @@
 #ifndef LAUTCPSERIALPORTWIDGET_H
 #define LAUTCPSERIALPORTWIDGET_H
 
+#ifdef LAU_CLIENT
 #include <QInputDialog>
-
+#endif
 #include "lauzeroconfwidget.h"
 
 #define LAUTCPSERIALPORTSERVERPORTNUMER  11364
@@ -109,6 +110,7 @@ private:
     QList<LAUTCPSerialPort *> ports;
 };
 
+#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -137,6 +139,11 @@ public:
     QString error() const
     {
         return (errorString);
+    }
+
+    void setError(QString string)
+    {
+        errorString = string;
     }
 
     QString address() const
@@ -183,5 +190,5 @@ private:
 private slots:
     void onTcpError(QAbstractSocket::SocketError error);
 };
-
+#endif
 #endif // LAUTCPSERIALPORTWIDGET_H

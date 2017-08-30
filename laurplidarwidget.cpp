@@ -7,6 +7,7 @@ const char LAURPLIDAR_INFO_HEADER[7] = { (char)0xA5, (char)0x5A, (char)0x14, (ch
 const char LAURPLIDAR_HEALTH_HEADER[7] = { (char)0xA5, (char)0x5A, (char)0x03, (char)0x00, (char)0x00, (char)0x00, (char)0x06 };
 const char LAURPLIDAR_SAMPLERATE[7] = { (char)0xA5, (char)0x5A, (char)0x04, (char)0x00, (char)0x00, (char)0x00, (char)0x15 };
 
+#ifdef LAU_CLIENT
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -73,7 +74,7 @@ LAURPLidarWidget::~LAURPLidarWidget()
 /****************************************************************************/
 void LAURPLidarWidget::showEvent(QShowEvent *)
 {
-    if (object){
+    if (object) {
         object->onInitiateScanning();
     }
 }
@@ -474,10 +475,10 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
     }
 
     if (scanState == StateNotScanning) {
-        if (messageList.isEmpty()){
-            return(QByteArray());
-        } else if (byteArray.length() < 7){
-            return(byteArray);
+        if (messageList.isEmpty()) {
+            return (QByteArray());
+        } else if (byteArray.length() < 7) {
+            return (byteArray);
         }
         int message = decodeMessageHeader(byteArray);
 
@@ -591,12 +592,12 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
                         char checksum = ((byteArray.at(1) & 0x0F) << 4) | (byteArray.at(0) & 0x0F);
 
                         // GET THE STARTING ANGLE OF THE SCANNER
-                        if (start){
-                            angleA = (double)(256 * (int)(byteArray.at(3) & 0x7F) + (int)byteArray.at(2))/64.0;
+                        if (start) {
+                            angleA = (double)(256 * (int)(byteArray.at(3) & 0x7F) + (int)byteArray.at(2)) / 64.0;
                             angleB = angleA;
                         } else {
                             angleB = angleA;
-                            angleA = (double)(256 * (int)(byteArray.at(3) & 0x7F) + (int)byteArray.at(2))/64.0;
+                            angleA = (double)(256 * (int)(byteArray.at(3) & 0x7F) + (int)byteArray.at(2)) / 64.0;
                         }
 
                         // ITERATE THROUGH ALL 32 MEASUREMENTS
@@ -604,12 +605,12 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
                             // GET THE FIRST OF TWO MEASUREMENTS WITHIN THE CURRENT PAIR
                             double dTheta1 = (16.0 * (int)(byteArray.at(4 + 5 * n + 0) & 0x03) + (int)(byteArray.at(4 + 5 * n + 4) & 0x0F));
                             double distance1 = 64.0 * (int)byteArray.at(4 + 5 * n + 1) + (int)((byteArray.at(4 + 5 * n + 0) >> 1) & 0x3F);
-                            scan[2 * n + 0] = getPoint(angleA, angleB, dTheta1, distance1, 2*n+0);
+                            scan[2 * n + 0] = getPoint(angleA, angleB, dTheta1, distance1, 2 * n + 0);
 
                             // GET THE SECOND OF TWO MEASUREMENTS WITHIN THE CURRENT PAIR
                             double dTheta2 = (16.0 * (int)(byteArray.at(4 + 5 * n + 2) & 0x03) + (int)((byteArray.at(4 + 5 * n + 4) & 0xF0) >> 4));
                             double distance2 = 64.0 * (int)byteArray.at(4 + 5 * n + 3) + (int)((byteArray.at(4 + 5 * n + 2) >> 1) & 0x3F);
-                            scan[2 * n + 1] = getPoint(angleA, angleB, dTheta2, distance2, 2*n+1);
+                            scan[2 * n + 1] = getPoint(angleA, angleB, dTheta2, distance2, 2 * n + 1);
                         }
 
                         // SEND OUR SCAN VECTOR TO OUR LIDAR LABEL
@@ -633,7 +634,7 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
 /****************************************************************************/
 QPoint LAURPLidarObject::getPoint(double Aa, double Ab, double dA, double D, int k)
 {
-    double angleDiff = (Aa > Ab) ? (Aa - Ab):(360.0 + Aa - Ab);
+    double angleDiff = (Aa > Ab) ? (Aa - Ab) : (360.0 + Aa - Ab);
     double angle = ((double)Aa + (angleDiff * k / 32.0) - dA) * 0.017453292519943;
     return (QPoint((double)D * qCos(angle), (double)D * qSin(angle)));
 }
@@ -668,3 +669,4 @@ int LAURPLidarObject::decodeMessageHeader(QByteArray byteArray)
         return (-1);
     }
 }
+#endif
