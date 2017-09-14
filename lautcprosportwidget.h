@@ -30,11 +30,11 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimerEvent>
+#include <qzeroconf.h>
+#ifdef LAU_ROS
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
-#include <qzeroconf.h>
-#include <boost/shared_array.hpp>
-#include <boost/cstdlib.hpp>
+#endif
 #endif
 
 #define LAUTCPROSPORTSERVERPORTNUMER  11444
@@ -66,22 +66,23 @@ public:
 
     bool isValid() const
     {
-        return(node.ok());
+        return (node.ok());
     }
 
     bool isNull() const
     {
-        return(!isValid());
+        return (!isValid());
     }
 
     QString topic() const
     {
-        return(topicString);
+        return (topicString);
     }
 
 protected:
     void incomingConnection(qintptr handle);
-    void timerEvent(QTimerEvent*){
+    void timerEvent(QTimerEvent *)
+    {
         ros::spinOnce();
     }
 
