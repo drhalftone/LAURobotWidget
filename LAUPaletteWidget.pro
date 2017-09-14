@@ -16,16 +16,26 @@
 #    along with LAURobotWidget.  If not, see <http://www.gnu.org/licenses/>.
 #
 #**************************************************************************************************/
-CONFIG  += server
+CONFIG  -= server
 CONFIG  -= client
+CONFIG  += ros
 
 QT      += core serialport network
 
 TEMPLATE = app
 
 SOURCES += main.cpp \
-           lautcpserialportwidget.cpp
-HEADERS += lautcpserialportwidget.h
+           lautcpserialportwidget.cpp \
+    lautcprosportwidget.cpp
+HEADERS += lautcpserialportwidget.h \
+    lautcprosportwidget.h
+
+ros {
+    TARGET   = RosServer
+    #DEFINES += LAU_ROS
+    SOURCES += lautcprosportwidget.cpp
+    HEADERS += lautcprosportwidget.h
+}
 
 server {
     TARGET   = RoboServer
