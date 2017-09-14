@@ -25,16 +25,21 @@ QT      += core serialport network
 TEMPLATE = app
 
 SOURCES += main.cpp \
-           lautcpserialportwidget.cpp \
-    lautcprosportwidget.cpp
-HEADERS += lautcpserialportwidget.h \
-    lautcprosportwidget.h
+           lautcpserialportwidget.cpp
+HEADERS += lautcpserialportwidget.h
 
 ros {
-    TARGET   = RosServer
-    #DEFINES += LAU_ROS
-    SOURCES += lautcprosportwidget.cpp
-    HEADERS += lautcprosportwidget.h
+    TARGET       = RosServer
+    CONFIG      += c++11
+    DEFINES     += LAU_ROS
+    SOURCES     += lautcprosportwidget.cpp
+    HEADERS     += lautcprosportwidget.h
+    INCLUDEPATH += /opt/ros/kinetic/include
+    DEPENDPATH  += /opt/ros/kinetic/include
+    LIBS        += -L/opt/ros/kinetic/lib -lroscpp -lrosconsole \
+                   -lroscpp_serialization -lrostime -lrospack \
+                   -lrospack -lrosbag -lcpp_common -lxmlrpcpp \
+                   -lrosconsole_log4cxx -lrosconsole_backend_interface
 }
 
 server {

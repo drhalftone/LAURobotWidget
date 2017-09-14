@@ -30,15 +30,14 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimerEvent>
-#ifdef LAU_ROS
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
-#endif
 #include <qzeroconf.h>
+#include <boost/shared_array.hpp>
+#include <boost/cstdlib.hpp>
 #endif
 
 #define LAUTCPROSPORTSERVERPORTNUMER  11444
-
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -54,26 +53,36 @@ public:
     {
         return (connected);
     }
+
     QString ipAddress() const
     {
         return (clientIPAddress);
     }
+
     int localPort() const
     {
         return (portNumber);
     }
-#ifdef LAU_ROS
-    bool isValid() const { return(node.ok); }
-    bool isNull() const { return(!isValid()); }
-#endif
-    QString topic() const { return(topicString); }
+
+    bool isValid() const
+    {
+        return(node.ok());
+    }
+
+    bool isNull() const
+    {
+        return(!isValid());
+    }
+
+    QString topic() const
+    {
+        return(topicString);
+    }
 
 protected:
     void incomingConnection(qintptr handle);
     void timerEvent(QTimerEvent*){
-#ifdef LAU_ROS
         ros::spinOnce();
-#endif
     }
 
 private slots:
@@ -87,16 +96,13 @@ private slots:
 private:
     bool connected;            // FLAG TO INDICATE WE ARE CONNECTED TO A CLIENT
     int portNumber;            // PORT NUMBER
-    QString portString;        // PORT STRING
     QTcpSocket *socket;        // TCP SOCKET TO HOLD THE INCOMING CONNECTION
     QZeroConf *zeroConf;       // ZERO CONF TO ADVERTISE PORT
     QString clientIPAddress;   // IP ADDRESS OF CLIENT, IF THERE IS ONE
 
-    QString topicString;            // TOPIC STRING THAT WE ARE LISTENING TO
-#ifdef LAU_ROS
-    ros::NodeHandle node;           // HANDLE TO ROS NODE INSTANCE
-    ros::Subscriber subscriber;     // HANDLE TO ROS SUBSCRIBER INSTANCE
-#endif
+    QString topicString;       // TOPIC STRING THAT WE ARE LISTENING TO
+    ros::NodeHandle node;      // HANDLE TO ROS NODE INSTANCE
+    ros::Subscriber subscriber;// HANDLE TO ROS SUBSCRIBER INSTANCE
 
 signals:
     void emitError(QString string);
@@ -110,7 +116,7 @@ class LAUTCPROSPortServer : public QObject
     Q_OBJECT
 
 public:
-    explicit LAUTCPROSPortServer(int num = LAUTCPROSPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0);
+    explicit LAUTCPROSPortServer(int num = LAUTCPROSPORTSERVERPORTNUMER, QString tpc = QString(), QObject *parent = 0);
     ~LAUTCPROSPortServer();
 
     int channels() const
