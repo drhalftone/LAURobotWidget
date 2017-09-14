@@ -25,8 +25,17 @@ QT      += core serialport network
 TEMPLATE = app
 
 SOURCES += main.cpp \
-           lautcpserialportwidget.cpp
-HEADERS += lautcpserialportwidget.h
+           lautcpserialportwidget.cpp \
+    lautcprosportwidget.cpp
+HEADERS += lautcpserialportwidget.h \
+    lautcprosportwidget.h
+
+ros {
+    TARGET   = RosServer
+    #DEFINES += LAU_ROS
+    SOURCES += lautcprosportwidget.cpp
+    HEADERS += lautcprosportwidget.h
+}
 
 ros {
     TARGET       = RosServer
