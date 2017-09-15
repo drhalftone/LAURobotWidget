@@ -33,6 +33,7 @@
 #include <qzeroconf.h>
 #ifdef LAU_ROS
 #include <ros/ros.h>
+#include <ros/master.h>
 #include <nav_msgs/Odometry.h>
 #endif
 #endif

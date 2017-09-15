@@ -55,7 +55,6 @@ LAUTCPROSPort::LAUTCPROSPort(QString string, int prtNmbr, QObject *parent) : QTc
         qDebug() << "ERROR: Node not ok.";
     }
 #endif
-
     // CREATE A ZERO CONF INSTANCE AND ADVERTISE THE SERIAL PORT
     zeroConf = new QZeroConf();
     connect(zeroConf, SIGNAL(error(QZeroConf::error_t)), this, SLOT(onServiceError(QZeroConf::error_t)));

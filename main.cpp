@@ -54,11 +54,15 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef LAU_ROS
+    // INITIALIZE AND START THE ROS ENGINE
+    ros::init(argc, argv, "ros_something");
+    ros::start();
+
     LAUTCPROSPortServer s(-1, QString());
-    if (s.isConnected(0)){
+    if (s.isConnected(0)) {
         a.exec();
     } else {
-        return(0);
+        return (0);
     }
 #endif
 
