@@ -37,10 +37,10 @@ ros {
     HEADERS     += lautcprosportwidget.h
     INCLUDEPATH += /opt/ros/kinetic/include
     DEPENDPATH  += /opt/ros/kinetic/include
-    LIBS        += -L/opt/ros/kinetic/lib -lroscpp -lrosconsole \
-                   -lroscpp_serialization -lrostime -lrospack \
-                   -lrospack -lrosbag -lcpp_common -lxmlrpcpp \
-                   -lrosconsole_log4cxx -lrosconsole_backend_interface
+#    LIBS        += -L/opt/ros/kinetic/lib -lroscpp -lrosconsole \
+#                   -lroscpp_serialization -lrostime -lrospack \
+#                   -lrospack -lrosbag -lcpp_common -lxmlrpcpp \
+#                   -lrosconsole_log4cxx -lrosconsole_backend_interface
 }
 
 server {

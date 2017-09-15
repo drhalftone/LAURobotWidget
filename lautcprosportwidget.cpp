@@ -1,12 +1,14 @@
 #include "lautcprosportwidget.h"
 
+#ifdef LAU_ROS
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-void chatterCallback(const nav_msgs::Odometry::ConstPtr& msg)
+void chatterCallback(const nav_msgs::Odometry::ConstPtr &msg)
 {
-   qDebug() << msg->pose.pose.orientation.x << msg->pose.pose.orientation.y << msg->pose.pose.orientation.z << msg->pose.pose.orientation.w;
+    qDebug() << msg->pose.pose.orientation.x << msg->pose.pose.orientation.y << msg->pose.pose.orientation.z << msg->pose.pose.orientation.w;
 }
+#endif
 
 /******************************************************************************/
 /******************************************************************************/
@@ -18,13 +20,15 @@ LAUTCPROSPortServer::LAUTCPROSPortServer(int num, QString tpc, QObject *parent) 
         num = LAUTCPROSPORTSERVERPORTNUMER;
     }
 
+#ifdef LAU_ROS
     // GET A LIST OF ALL POSSIBLE ROS TOPICS CURRENTLY AVAILABLE
     ros::master::V_TopicInfo topics;
-    if (ros::master::getTopics(topics)){
-        for (int n=0; n<topics.size(); n++){
+    if (ros::master::getTopics(topics)) {
+        for (int n = 0; n < topics.size(); n++) {
             ports << new LAUTCPROSPort(QString::fromStdString(topics.at(n).name), num + n);
         }
     }
+#endif
 }
 
 /******************************************************************************/
@@ -42,13 +46,15 @@ LAUTCPROSPortServer::~LAUTCPROSPortServer()
 /******************************************************************************/
 LAUTCPROSPort::LAUTCPROSPort(QString string, int prtNmbr, QObject *parent) : QTcpServer(parent), connected(false), portNumber(prtNmbr), socket(NULL), zeroConf(NULL), topicString(string)
 {
+#ifdef LAU_ROS
     // SET THE SERIAL PORT SETTINGS
-    if (node.ok()){
+    if (node.ok()) {
         subscriber = node.subscribe(topicString.toStdString(), 1000, chatterCallback);
         startTimer(100);
     } else {
         qDebug() << "ERROR: Node not ok.";
     }
+#endif
 
     // CREATE A ZERO CONF INSTANCE AND ADVERTISE THE SERIAL PORT
     zeroConf = new QZeroConf();

@@ -66,7 +66,11 @@ public:
 
     bool isValid() const
     {
+#ifdef LAU_ROS
         return (node.ok());
+#else
+        return (false);
+#endif
     }
 
     bool isNull() const
@@ -83,7 +87,9 @@ protected:
     void incomingConnection(qintptr handle);
     void timerEvent(QTimerEvent *)
     {
+#ifdef LAU_ROS
         ros::spinOnce();
+#endif
     }
 
 private slots:
@@ -102,8 +108,10 @@ private:
     QString clientIPAddress;   // IP ADDRESS OF CLIENT, IF THERE IS ONE
 
     QString topicString;       // TOPIC STRING THAT WE ARE LISTENING TO
+#ifdef LAU_ROS
     ros::NodeHandle node;      // HANDLE TO ROS NODE INSTANCE
     ros::Subscriber subscriber;// HANDLE TO ROS SUBSCRIBER INSTANCE
+#endif
 
 signals:
     void emitError(QString string);
