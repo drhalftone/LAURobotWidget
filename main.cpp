@@ -27,7 +27,13 @@
 #include <QCoreApplication>
 #endif
 
+#ifdef LAU_SERVER
 #include "lautcpserialportwidget.h"
+#endif
+
+#ifdef LAU_ROS
+#include "lautcprosportwidget.h"
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -45,6 +51,15 @@ int main(int argc, char *argv[])
 
 #ifdef LAU_SERVER
     LAUTCPSerialPortServer s(-1, 60000);
+#endif
+
+#ifdef LAU_ROS
+    LAUTCPROSPortServer s(-1, QString());
+    if (s.isConnected(0)){
+        a.exec();
+    } else {
+        return(0);
+    }
 #endif
 
 #ifdef LAU_CLIENT
