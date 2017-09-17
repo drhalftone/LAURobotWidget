@@ -1,15 +1,5 @@
 #include "lautcprosportwidget.h"
 
-#ifdef LAU_ROS
-/******************************************************************************/
-/******************************************************************************/
-/******************************************************************************/
-void chatterCallback(const nav_msgs::Odometry::ConstPtr &msg)
-{
-    qDebug() << msg->pose.pose.orientation.x << msg->pose.pose.orientation.y << msg->pose.pose.orientation.z << msg->pose.pose.orientation.w;
-}
-#endif
-
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
@@ -65,7 +55,7 @@ LAUTCPROSPort::LAUTCPROSPort(QString tpc, QString dType, int prtNmbr, QObject *p
 #ifdef LAU_ROS
     // SET THE SERIAL PORT SETTINGS
     if (node.ok()) {
-        subscriber = node.subscribe(topicString.toStdString(), 1000, chatterCallback);
+        subscriber = node.subscribe(topicString.toStdString(), 1000, &LAUTCPROSPort::callback, this);
     } else {
         qDebug() << "ERROR: Node not ok.";
     }
@@ -217,5 +207,22 @@ void LAUTCPROSPort::onTcpError(QAbstractSocket::SocketError error)
             break;
         default:
             qDebug() << "LAU3DVideoTCPClient :: Default error!";
+    }
+}
+
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+void LAUTCPROSPort::callback(const nav_msgs::Odometry::ConstPtr &msg)
+{
+    QQuaternion quaternian(msg->pose.pose.orientation.w, msg->pose.pose.orientation.x ,msg->pose.pose.orientation.y, msg->pose.pose.orientation.z);
+    qDebug() << quaternian;
+    if (isConnected()){
+        double buffer[4];
+        buffer[0] = msg->pose.pose.orientation.w;
+        buffer[1] = msg->pose.pose.orientation.x;
+        buffer[2] = msg->pose.pose.orientation.y;
+        buffer[3] = msg->pose.pose.orientation.z;
+        socket->write((char*)&buffer[0], sizeof(double)*4);
     }
 }

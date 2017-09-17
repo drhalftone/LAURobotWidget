@@ -50,12 +50,14 @@ int main(int argc, char *argv[])
     //LAUKeyenceWidget w(QString(""));
     //LAURobotWidget w;
 
-#ifdef LAU_SERVER
-    LAUTCPSerialPortServer s(-1, 60000);
+#ifdef LAU_ROS
+    ros::init(argc, argv, "lautcprosportwidget");
+    ros::start();
+    LAUTCPROSPortServer s(-1, QString("/realsense/odom"));
 #endif
 
-#ifdef LAU_ROS
-    LAUTCPROSPortServer s(-1, QString());
+#ifdef LAU_SERVER
+    LAUTCPSerialPortServer s(-1, 60000);
 #endif
 
 #ifdef LAU_CLIENT

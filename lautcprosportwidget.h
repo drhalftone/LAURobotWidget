@@ -30,6 +30,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimerEvent>
+#include <QQuaternion>
 #include <qzeroconf.h>
 #ifdef LAU_ROS
 #include <ros/ros.h>
@@ -65,15 +66,6 @@ public:
         return (portNumber);
     }
 
-    bool isValid() const
-    {
-#ifdef LAU_ROS
-        return (node.ok());
-#else
-        return (false);
-#endif
-    }
-
     bool isNull() const
     {
         return (!isValid());
@@ -83,6 +75,21 @@ public:
     {
         return (topicString);
     }
+
+#ifdef LAU_ROS
+    void callback(const nav_msgs::Odometry::ConstPtr &msg);
+
+    bool isValid() const
+    {
+        return (node.ok());
+    }
+#else
+    bool isValid() const
+    {
+        return (false);
+    }
+#endif
+
 
 protected:
     void incomingConnection(qintptr handle);
