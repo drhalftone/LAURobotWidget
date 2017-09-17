@@ -215,14 +215,17 @@ void LAUTCPROSPort::onTcpError(QAbstractSocket::SocketError error)
 /******************************************************************************/
 void LAUTCPROSPort::callback(const nav_msgs::Odometry::ConstPtr &msg)
 {
-    QQuaternion quaternian(msg->pose.pose.orientation.w, msg->pose.pose.orientation.x ,msg->pose.pose.orientation.y, msg->pose.pose.orientation.z);
-    qDebug() << quaternian;
     if (isConnected()){
-        double buffer[4];
+        double buffer[7];
         buffer[0] = msg->pose.pose.orientation.w;
         buffer[1] = msg->pose.pose.orientation.x;
         buffer[2] = msg->pose.pose.orientation.y;
         buffer[3] = msg->pose.pose.orientation.z;
-        socket->write((char*)&buffer[0], sizeof(double)*4);
+
+        buffer[4] = msg->pose.pose.position.x;
+        buffer[5] = msg->pose.pose.position.y;
+        buffer[6] = msg->pose.pose.position.z;
+
+        socket->write((char*)&buffer[0], sizeof(double)*7);
     }
 }
