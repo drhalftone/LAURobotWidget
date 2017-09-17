@@ -47,7 +47,7 @@ class LAUTCPROSPort : public QTcpServer
     Q_OBJECT
 
 public:
-    explicit LAUTCPROSPort(QString string, int prtNmbr = LAUTCPROSPORTSERVERPORTNUMER, QObject *parent = 0);
+    explicit LAUTCPROSPort(QString tpc, QString dType, int prtNmbr = LAUTCPROSPORTSERVERPORTNUMER, QObject *parent = 0);
     ~LAUTCPROSPort();
 
     bool isConnected() const
@@ -144,12 +144,12 @@ public:
     }
 
 protected:
-#ifdef LAU_ROS
     void timerEvent(QTimerEvent *)
     {
+#ifdef LAU_ROS
         ros::spinOnce();
-    }
 #endif
+    }
 
 private:
     QList<LAUTCPROSPort *> ports;

@@ -56,11 +56,6 @@ int main(int argc, char *argv[])
 
 #ifdef LAU_ROS
     LAUTCPROSPortServer s(-1, QString());
-    if (s.isConnected(0)) {
-        a.exec();
-    } else {
-        return (0);
-    }
 #endif
 
 #ifdef LAU_CLIENT
