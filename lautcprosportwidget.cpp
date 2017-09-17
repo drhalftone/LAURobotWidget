@@ -19,16 +19,31 @@ LAUTCPROSPortServer::LAUTCPROSPortServer(int num, QString tpc, QObject *parent) 
     if (num < 0) {
         num = LAUTCPROSPORTSERVERPORTNUMER;
     }
-
 #ifdef LAU_ROS
-    // GET A LIST OF ALL POSSIBLE ROS TOPICS CURRENTLY AVAILABLE
-    ros::master::V_TopicInfo topics;
-    if (ros::master::getTopics(topics)) {
-        for (int n = 0; n < topics.size(); n++) {
-            ports << new LAUTCPROSPort(QString::fromStdString(topics.at(n).name), num + n);
+    if (tpc.isEmpty()){
+        // GET A LIST OF ALL POSSIBLE ROS TOPICS CURRENTLY AVAILABLE
+        ros::master::V_TopicInfo topics;
+        if (ros::master::getTopics(topics)) {
+            for (unsigned int n = 0; n < topics.size(); n++) {
+                ports << new LAUTCPROSPort(QString::fromStdString(topics.at(n).name), QString::fromStdString(topics.at(n).datatype), num + n);
+            }
+        }
+    } else {
+        // GET A LIST OF ALL POSSIBLE ROS TOPICS CURRENTLY AVAILABLE
+        ros::master::V_TopicInfo topics;
+        if (ros::master::getTopics(topics)) {
+            for (unsigned int n = 0; n < topics.size(); n++) {
+                if (QString::fromStdString(topics.at(n).name) == tpc){
+                    ports << new LAUTCPROSPort(QString::fromStdString(topics.at(n).name), QString::fromStdString(topics.at(n).datatype), num + n);
+                }
+            }
         }
     }
 #endif
+    // START THE TIMER TO CHECK FOR ROS EVENTS
+    if (ports.isEmpty() == false){
+        startTimer(100);
+    }
 }
 
 /******************************************************************************/
@@ -44,13 +59,13 @@ LAUTCPROSPortServer::~LAUTCPROSPortServer()
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-LAUTCPROSPort::LAUTCPROSPort(QString string, int prtNmbr, QObject *parent) : QTcpServer(parent), connected(false), portNumber(prtNmbr), socket(NULL), zeroConf(NULL), topicString(string)
+LAUTCPROSPort::LAUTCPROSPort(QString tpc, QString dType, int prtNmbr, QObject *parent) : QTcpServer(parent), connected(false), portNumber(prtNmbr), socket(NULL), zeroConf(NULL), topicString(tpc)
 {
+    qDebug() << tpc << dType;
 #ifdef LAU_ROS
     // SET THE SERIAL PORT SETTINGS
     if (node.ok()) {
         subscriber = node.subscribe(topicString.toStdString(), 1000, chatterCallback);
-        startTimer(100);
     } else {
         qDebug() << "ERROR: Node not ok.";
     }
@@ -67,9 +82,12 @@ LAUTCPROSPort::LAUTCPROSPort(QString string, int prtNmbr, QObject *parent) : QTc
 /******************************************************************************/
 LAUTCPROSPort::~LAUTCPROSPort()
 {
+    // CLOSE THE TCP SOCKET
     if (socket) {
         delete socket;
     }
+
+    // DELETE THE ZERO CONF INSTANCE
     if (zeroConf) {
         delete zeroConf;
     }
@@ -177,6 +195,8 @@ void LAUTCPROSPort::onServiceError(QZeroConf::error_t error)
             QMessageBox::warning(NULL, topicString, QString("Zero Conf Server Error: Browser failed!"), QMessageBox::Ok);
             break;
     }
+#else
+    Q_UNUSED(error);
 #endif
 }
 
