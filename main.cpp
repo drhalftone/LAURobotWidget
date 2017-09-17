@@ -23,6 +23,7 @@
 #include "laukeyencewidget.h"
 #include "laurobotwidget.h"
 #include "laurplidarwidget.h"
+#include "lauodomwidget.h"
 #else
 #include <QCoreApplication>
 #endif
@@ -54,10 +55,6 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef LAU_ROS
-    // INITIALIZE AND START THE ROS ENGINE
-    ros::init(argc, argv, "ros_something");
-    ros::start();
-
     LAUTCPROSPortServer s(-1, QString());
     if (s.isConnected(0)) {
         a.exec();
@@ -67,7 +64,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef LAU_CLIENT
-    LAURPLidarDialog w(QString(), -1, NULL);
+    LAUOdomDialog w(QString(), -1, NULL);
     if (w.isValid()) {
         return (w.exec());
     }

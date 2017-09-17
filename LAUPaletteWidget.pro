@@ -17,8 +17,8 @@
 #
 #**************************************************************************************************/
 CONFIG  -= server
-CONFIG  -= client
-CONFIG  += ros
+CONFIG  += client
+CONFIG  -= ros
 
 QT      += core serialport network
 
@@ -32,15 +32,18 @@ HEADERS += lautcpserialportwidget.h
 ros {
     TARGET       = RosServer
     CONFIG      += c++11
-    #DEFINES     += LAU_ROS
     SOURCES     += lautcprosportwidget.cpp
     HEADERS     += lautcprosportwidget.h
     INCLUDEPATH += /opt/ros/kinetic/include
     DEPENDPATH  += /opt/ros/kinetic/include
-#    LIBS        += -L/opt/ros/kinetic/lib -lroscpp -lrosconsole \
-#                   -lroscpp_serialization -lrostime -lrospack \
-#                   -lrospack -lrosbag -lcpp_common -lxmlrpcpp \
-#                   -lrosconsole_log4cxx -lrosconsole_backend_interface
+
+    unix:!macx {
+        DEFINES     += LAU_ROS
+        LIBS        += -L/opt/ros/kinetic/lib -lroscpp -lrosconsole \
+                       -lroscpp_serialization -lrostime -lrospack \
+                       -lrospack -lrosbag -lcpp_common -lxmlrpcpp \
+                       -lrosconsole_log4cxx -lrosconsole_backend_interface
+    }
 }
 
 server {
@@ -55,11 +58,13 @@ client {
     SOURCES += laurobotwidget.cpp \
                laupalettewidget.cpp \
                lauzeroconfwidget.cpp \
-               laurplidarwidget.cpp
+               laurplidarwidget.cpp \
+               lauodomwidget.cpp
     HEADERS += laurobotwidget.h \
                laupalettewidget.h \
                lauzeroconfwidget.h \
-               laurplidarwidget.h
+               laurplidarwidget.h \
+               lauodomwidget.h
     RESOURCES += laupalettegear.qrc
 }
 

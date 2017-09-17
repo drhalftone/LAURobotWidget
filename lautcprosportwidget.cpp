@@ -21,6 +21,15 @@ LAUTCPROSPortServer::LAUTCPROSPortServer(int num, QString tpc, QObject *parent) 
     }
 
 #ifdef LAU_ROS
+    // INITIALIZE AND START THE ROS ENGINE IF IT HASN'T ALREADY BEEN STARTED
+    if (ros::isInitialized() == false) {
+        ros::init(argc, argv, "LAUTCPROSPortServer");
+        ros::start();
+    }
+
+    // LAUNCH A TIMER TO TRIGGER ROS MESSAGE HANDLING
+    startTimer(100);
+
     // GET A LIST OF ALL POSSIBLE ROS TOPICS CURRENTLY AVAILABLE
     ros::master::V_TopicInfo topics;
     if (ros::master::getTopics(topics)) {
@@ -50,7 +59,6 @@ LAUTCPROSPort::LAUTCPROSPort(QString string, int prtNmbr, QObject *parent) : QTc
     // SET THE SERIAL PORT SETTINGS
     if (node.ok()) {
         subscriber = node.subscribe(topicString.toStdString(), 1000, chatterCallback);
-        startTimer(100);
     } else {
         qDebug() << "ERROR: Node not ok.";
     }
