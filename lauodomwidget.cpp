@@ -46,6 +46,9 @@ LAUOdomWidget::LAUOdomWidget(QString ipAddr, int portNum, QWidget *parent) : QWi
     object = new LAUOdomObject(ipAddr, portNum);
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
+    if (object->connectPort()) {
+        connect(object, SIGNAL(emitPoint(QPoint)), label, SLOT(onAddPoint(QPoint)), Qt::DirectConnection);
+    }
 }
 
 /****************************************************************************/
@@ -260,5 +263,14 @@ void LAUOdomObject::onReadyRead()
 /****************************************************************************/
 QByteArray LAUOdomObject::processMessage(QByteArray byteArray)
 {
-    return (QByteArray());
+    while (byteArray.length() > (unsigned int)(7 * sizeof(double))) {
+        double *buffer = (double *)byteArray.data();
+        QQuaternion quaternian(buffer[0], buffer[1], buffer[2], buffer[3]);
+        QVector3D position(buffer[4], buffer[5], buffer[6]);
+        qDebug() << quaternian << position;
+
+        // REMOVE A QUATERNIAN FROM THE INCOMING MESSAGE
+        byteArray = byteArray.right(byteArray.length() - 7 * sizeof(double));
+    }
+    return (byteArray);
 }

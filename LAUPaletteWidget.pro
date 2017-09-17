@@ -18,7 +18,7 @@
 #**************************************************************************************************/
 CONFIG  -= server
 CONFIG  += client
-CONFIG  -= ros
+CONFIG  += ros
 
 QT      += core serialport network
 

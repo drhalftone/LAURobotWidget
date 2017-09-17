@@ -65,15 +65,6 @@ public:
         return (portNumber);
     }
 
-    bool isValid() const
-    {
-#ifdef LAU_ROS
-        return (node.ok());
-#else
-        return (false);
-#endif
-    }
-
     bool isNull() const
     {
         return (!isValid());
@@ -83,6 +74,19 @@ public:
     {
         return (topicString);
     }
+
+#ifdef LAU_ROS
+    void callbackA(const nav_msgs::Odometry::ConstPtr &msg);
+    bool isValid() const
+    {
+        return (node.ok());
+    }
+#else
+    bool isValid() const
+    {
+        return (false);
+    }
+#endif
 
 protected:
     void incomingConnection(qintptr handle);
@@ -103,6 +107,7 @@ private:
     QString clientIPAddress;   // IP ADDRESS OF CLIENT, IF THERE IS ONE
 
     QString topicString;       // TOPIC STRING THAT WE ARE LISTENING TO
+    QString dataType;          // DATA TYPE STRING THAT WE ARE LISTENING TO
 #ifdef LAU_ROS
     ros::NodeHandle node;      // HANDLE TO ROS NODE INSTANCE
     ros::Subscriber subscriber;// HANDLE TO ROS SUBSCRIBER INSTANCE
@@ -154,86 +159,4 @@ protected:
 private:
     QList<LAUTCPROSPort *> ports;
 };
-
-#ifdef LAU_CLIENT
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-class LAUTCPROSPortClient : public QObject
-{
-    Q_OBJECT
-
-public:
-    LAUTCPROSPortClient(QString portString, QObject *parent = 0);
-    LAUTCPROSPortClient(QString ipAddr, int portNum, QObject *parent = 0);
-    ~LAUTCPROSPortClient();
-
-    bool connectPort();
-    bool isValid() const
-    {
-        return (port && port->isOpen());
-    }
-
-    void write(QByteArray byteArray)
-    {
-        if (isValid()) {
-            port->write(byteArray);
-        }
-    }
-
-    QString error() const
-    {
-        return (errorString);
-    }
-
-    void setError(QString string)
-    {
-        errorString = string;
-    }
-
-    QString address() const
-    {
-        return (ipAddress);
-    }
-
-    int number() const
-    {
-        return (portNumber);
-    }
-
-    void waitForBytesWritten(int msecs = 30000)
-    {
-        port->waitForBytesWritten(msecs);
-    }
-
-    bool bytesAvailable()
-    {
-        return (port->bytesAvailable());
-    }
-
-    QByteArray readAll()
-    {
-        return (port->readAll());
-    }
-
-public slots:
-    virtual void onSendMessage(int message, void *argument = NULL) = 0;
-    virtual void onReadyRead() = 0;
-    virtual void onConnected() { ; }
-    virtual void onDisconnected() { ; }
-    virtual void onError(QString error)
-    {
-        qDebug() << "LAUTCPROSPortClient ::" << error;
-    }
-
-private:
-    QString ipAddress;
-    int portNumber;
-    QIODevice *port;
-    QString errorString;
-
-private slots:
-    void onTcpError(QAbstractSocket::SocketError error);
-};
-#endif
 #endif // LAUTCPROSPORTWIDGET_H

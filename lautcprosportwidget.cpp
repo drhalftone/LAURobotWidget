@@ -1,15 +1,5 @@
 #include "lautcprosportwidget.h"
 
-#ifdef LAU_ROS
-/******************************************************************************/
-/******************************************************************************/
-/******************************************************************************/
-void chatterCallback(const nav_msgs::Odometry::ConstPtr &msg)
-{
-    qDebug() << msg->pose.pose.orientation.x << msg->pose.pose.orientation.y << msg->pose.pose.orientation.z << msg->pose.pose.orientation.w;
-}
-#endif
-
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
@@ -20,7 +10,7 @@ LAUTCPROSPortServer::LAUTCPROSPortServer(int num, QString tpc, QObject *parent) 
         num = LAUTCPROSPORTSERVERPORTNUMER;
     }
 #ifdef LAU_ROS
-    if (tpc.isEmpty()){
+    if (tpc.isEmpty()) {
         // GET A LIST OF ALL POSSIBLE ROS TOPICS CURRENTLY AVAILABLE
         ros::master::V_TopicInfo topics;
         if (ros::master::getTopics(topics)) {
@@ -33,7 +23,7 @@ LAUTCPROSPortServer::LAUTCPROSPortServer(int num, QString tpc, QObject *parent) 
         ros::master::V_TopicInfo topics;
         if (ros::master::getTopics(topics)) {
             for (unsigned int n = 0; n < topics.size(); n++) {
-                if (QString::fromStdString(topics.at(n).name) == tpc){
+                if (QString::fromStdString(topics.at(n).name) == tpc) {
                     ports << new LAUTCPROSPort(QString::fromStdString(topics.at(n).name), QString::fromStdString(topics.at(n).datatype), num + n);
                 }
             }
@@ -41,7 +31,7 @@ LAUTCPROSPortServer::LAUTCPROSPortServer(int num, QString tpc, QObject *parent) 
     }
 #endif
     // START THE TIMER TO CHECK FOR ROS EVENTS
-    if (ports.isEmpty() == false){
+    if (ports.isEmpty() == false) {
         startTimer(100);
     }
 }
@@ -59,13 +49,15 @@ LAUTCPROSPortServer::~LAUTCPROSPortServer()
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-LAUTCPROSPort::LAUTCPROSPort(QString tpc, QString dType, int prtNmbr, QObject *parent) : QTcpServer(parent), connected(false), portNumber(prtNmbr), socket(NULL), zeroConf(NULL), topicString(tpc)
+LAUTCPROSPort::LAUTCPROSPort(QString tpc, QString dType, int prtNmbr, QObject *parent) : QTcpServer(parent), connected(false), portNumber(prtNmbr), socket(NULL), zeroConf(NULL), topicString(tpc), dataType(dType)
 {
     qDebug() << tpc << dType;
 #ifdef LAU_ROS
     // SET THE SERIAL PORT SETTINGS
     if (node.ok()) {
-        subscriber = node.subscribe(topicString.toStdString(), 1000, chatterCallback);
+        if (dataType == QString("nav_msgs::Odometry")) {
+            subscriber = node.subscribe(topicString.toStdString(), 1000, LAUTCPROSPort::callbackA, this);
+        }
     } else {
         qDebug() << "ERROR: Node not ok.";
     }
@@ -219,3 +211,13 @@ void LAUTCPROSPort::onTcpError(QAbstractSocket::SocketError error)
             qDebug() << "LAU3DVideoTCPClient :: Default error!";
     }
 }
+
+#ifdef LAU_ROS
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+void LAUTCPROSPort::callbackA(const nav_msgs::Odometry::ConstPtr &msg)
+{
+    ;
+}
+#endif
