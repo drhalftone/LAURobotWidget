@@ -21,7 +21,7 @@ LAUOdomWidget::LAUOdomWidget(QString portString, QWidget *parent) : QWidget(pare
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
-        connect(object, SIGNAL(emitPoint(QPoint)), label, SLOT(onAddPoint(QPoint)), Qt::DirectConnection);
+        connect(object, SIGNAL(emitOdometry(QQuaternion, QVector3D)), label, SLOT(onUpdateOdometry(QQuaternion, QVector3D)), Qt::DirectConnection);
     }
 }
 
@@ -47,7 +47,7 @@ LAUOdomWidget::LAUOdomWidget(QString ipAddr, int portNum, QWidget *parent) : QWi
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
-        //connect(object, SIGNAL(emitOdom(QQuaternion, QVector3D)), label, SLOT(onUpdateOdom(QQuaternion, QVector3D)), Qt::DirectConnection);
+        connect(object, SIGNAL(emitOdometry(QQuaternion, QVector3D)), label, SLOT(onUpdateOdometry(QQuaternion, QVector3D)), Qt::DirectConnection);
     }
 }
 
@@ -104,8 +104,10 @@ void LAUOdomLabel::onEnableSavePoints(bool state)
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAUOdomLabel::onAddPoint(QPoint pt)
+void LAUOdomLabel::onUpdateOdometry(QQuaternion pose, QVector3D position)
 {
+    qDebug() << pose << position;
+
     // REPORT FRAME RATE TO THE CONSOLE
     if (++counter >= 200) {
         //qDebug() << QString("%1 sps").arg(1000.0 * (float)counter / (float)time.elapsed());
@@ -116,40 +118,23 @@ void LAUOdomLabel::onAddPoint(QPoint pt)
     // ONLY ADD POINT IS THE SAVE FLAG IS TRUE
     if (savePointsFlag) {
         // SET THE LIMITS TO INCLUDE THE INCOMING POINT
-        topLeft.setX(qMin(topLeft.x(), pt.x()));
-        topLeft.setY(qMin(topLeft.y(), pt.y()));
+        topLeft.setX(qMin(topLeft.x(), position.x()));
+        topLeft.setY(qMin(topLeft.y(), position.y()));
+        topLeft.setZ(qMin(topLeft.z(), position.z()));
 
-        bottomRight.setX(qMax(bottomRight.x(), pt.x()));
-        bottomRight.setY(qMax(bottomRight.y(), pt.y()));
+        bottomRight.setX(qMax(bottomRight.x(), position.x()));
+        bottomRight.setY(qMax(bottomRight.y(), position.y()));
+        bottomRight.setZ(qMax(bottomRight.z(), position.z()));
 
         // ADD THE NEW POINT TO OUR POINT LIST
-        points.append(pt);
+        points.append(position);
+        poses.append(pose);
 
         // UPDATE THE LABEL ON SCREEN FOR THE USER
         if (points.count() % 100 == 0) {
             //qDebug() << "Number of points:" << points.count();
             update();
         }
-    }
-}
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-void LAUOdomLabel::onAddPoints(QList<QPoint> pts)
-{
-    for (int n = 0; n < pts.count(); n++) {
-        onAddPoint(pts.at(n));
-    }
-}
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-void LAUOdomLabel::onAddPoints(QVector<QPoint> pts)
-{
-    for (int n = 0; n < pts.count(); n++) {
-        onAddPoint(pts[n]);
     }
 }
 
@@ -173,8 +158,8 @@ void LAUOdomLabel::onSavePoints()
         if (file.open(QIODevice::WriteOnly)) {
             //file.write(QString("sensorX, sensorY\n").toLatin1());
             for (int n = 0; n < points.count(); n++) {
-                QPoint pt = points.at(n);
-                file.write(QString("%1, %2\n").arg(pt.x()).arg(pt.y()).toLatin1());
+                QVector3D pt = points.at(n);
+                file.write(QString("%1, %2, %3\n").arg(pt.x()).arg(pt.y()).arg(pt.z()).toLatin1());
             }
             file.close();
         }
@@ -218,7 +203,7 @@ void LAUOdomLabel::paintEvent(QPaintEvent *)
         pen.setCosmetic(true);
         painter.setPen(pen);
         for (int n = 1; n < points.count() && n < 10000; n++) {
-            painter.drawPoint(points.at(points.count() - n));
+            painter.drawPoint(points.at(points.count() - n).x(), points.at(points.count() - n).y());
         }
     }
 

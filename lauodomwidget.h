@@ -67,11 +67,9 @@ public:
     LAUOdomLabel(QWidget *parent = 0);
 
 public slots:
-    void onAddPoint(QPoint pt);
-    void onAddPoints(QList<QPoint> pts);
-    void onAddPoints(QVector<QPoint> pts);
     void onSavePoints();
     void onEnableSavePoints(bool state);
+    void onUpdateOdometry(QQuaternion pose, QVector3D position);
 
 protected:
     void paintEvent(QPaintEvent *);
@@ -79,9 +77,10 @@ protected:
 
 private:
     bool savePointsFlag;
-    QList<QPoint> points;
-    QPoint topLeft;
-    QPoint bottomRight;
+    QList<QQuaternion> poses;
+    QList<QVector3D> points;
+    QVector3D topLeft;
+    QVector3D bottomRight;
     QMenu *contextMenu;
     int counter;
     QTime time;
