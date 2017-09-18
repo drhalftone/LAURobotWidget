@@ -47,7 +47,7 @@ LAUOdomWidget::LAUOdomWidget(QString ipAddr, int portNum, QWidget *parent) : QWi
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
-        connect(object, SIGNAL(emitPoint(QPoint)), label, SLOT(onAddPoint(QPoint)), Qt::DirectConnection);
+        //connect(object, SIGNAL(emitOdom(QQuaternion, QVector3D)), label, SLOT(onUpdateOdom(QQuaternion, QVector3D)), Qt::DirectConnection);
     }
 }
 
@@ -263,13 +263,17 @@ void LAUOdomObject::onReadyRead()
 /****************************************************************************/
 QByteArray LAUOdomObject::processMessage(QByteArray byteArray)
 {
-    while (byteArray.length() > (unsigned int)(7 * sizeof(double))) {
+    // MAKE SURE WE HAVE ENOUGH BYTES FOR A COMPLETE MESSAGE
+    while (byteArray.length() > (int)(7 * sizeof(double))) {
+        // EXTRACT THE DOUBLE FLOATING POINT VALUES FROM THE INCOMING MESSAGE
         double *buffer = (double *)byteArray.data();
-        QQuaternion quaternian(buffer[0], buffer[1], buffer[2], buffer[3]);
+        QQuaternion pose(buffer[0], buffer[1], buffer[2], buffer[3]);
         QVector3D position(buffer[4], buffer[5], buffer[6]);
-        qDebug() << quaternian << position;
 
-        // REMOVE A QUATERNIAN FROM THE INCOMING MESSAGE
+        // EMIT THE POSE AND POSITION TO THE USER
+        emit emitOdometry(pose, position);
+
+        // REMOVE THE POSE AND POSITION FROM THE INCOMING MESSAGE FOR THE NEXT ITERATION
         byteArray = byteArray.right(byteArray.length() - 7 * sizeof(double));
     }
     return (byteArray);

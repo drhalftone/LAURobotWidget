@@ -53,6 +53,7 @@ private:
 
 signals:
     void emitError(QString string);
+    void emitOdometry(QQuaternion pose, QVector3D position);
 };
 
 /****************************************************************************/

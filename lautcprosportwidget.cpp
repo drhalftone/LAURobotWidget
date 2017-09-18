@@ -10,7 +10,7 @@ LAUTCPROSPortServer::LAUTCPROSPortServer(int num, QString tpc, QObject *parent) 
         num = LAUTCPROSPORTSERVERPORTNUMER;
     }
 #ifdef LAU_ROS
-    if (tpc.isEmpty()){
+    if (tpc.isEmpty()) {
         // GET A LIST OF ALL POSSIBLE ROS TOPICS CURRENTLY AVAILABLE
         ros::master::V_TopicInfo topics;
         if (ros::master::getTopics(topics)) {
@@ -23,7 +23,7 @@ LAUTCPROSPortServer::LAUTCPROSPortServer(int num, QString tpc, QObject *parent) 
         ros::master::V_TopicInfo topics;
         if (ros::master::getTopics(topics)) {
             for (unsigned int n = 0; n < topics.size(); n++) {
-                if (QString::fromStdString(topics.at(n).name) == tpc){
+                if (QString::fromStdString(topics.at(n).name) == tpc) {
                     ports << new LAUTCPROSPort(QString::fromStdString(topics.at(n).name), QString::fromStdString(topics.at(n).datatype), num + n);
                 }
             }
@@ -31,7 +31,7 @@ LAUTCPROSPortServer::LAUTCPROSPortServer(int num, QString tpc, QObject *parent) 
     }
 #endif
     // START THE TIMER TO CHECK FOR ROS EVENTS
-    if (ports.isEmpty() == false){
+    if (ports.isEmpty() == false) {
         startTimer(100);
     }
 }
@@ -210,12 +210,13 @@ void LAUTCPROSPort::onTcpError(QAbstractSocket::SocketError error)
     }
 }
 
+#ifdef LAU_ROS
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
 void LAUTCPROSPort::callback(const nav_msgs::Odometry::ConstPtr &msg)
 {
-    if (isConnected()){
+    if (isConnected()) {
         double buffer[7];
         buffer[0] = msg->pose.pose.orientation.w;
         buffer[1] = msg->pose.pose.orientation.x;
@@ -226,6 +227,7 @@ void LAUTCPROSPort::callback(const nav_msgs::Odometry::ConstPtr &msg)
         buffer[5] = msg->pose.pose.position.y;
         buffer[6] = msg->pose.pose.position.z;
 
-        socket->write((char*)&buffer[0], sizeof(double)*7);
+        socket->write((char *)&buffer[0], sizeof(double) * 7);
     }
 }
+#endif
