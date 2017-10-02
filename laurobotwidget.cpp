@@ -155,7 +155,7 @@ void LAURobotWidget::onButtonPressed(QPoint pos)
 {
     // DETERMINE IF SIGNAL IS FROM PUSH BUTTON
     if (pos == QPoint(0, 1)) {
-        emit emitMessage(LAUROBOT_READMAINBATTERYVOLTAGE);
+        emit emitMessage(LAUROBOT_READPWMMODE);
     }
 }
 
@@ -446,6 +446,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
             messageIDList.append(message);
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READFIRMWAREVERSION) {
             byteArray.append((char)LAUROBOT_READFIRMWAREVERSION);
             qDebug() << "SENT: LAUROBOT_READFIRMWAREVERSION";
@@ -453,6 +454,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
             messageIDList.append(message);
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READMAINBATTERYVOLTAGE) {
             byteArray.append((char)LAUROBOT_READMAINBATTERYVOLTAGE);
             qDebug() << "SENT: LAUROBOT_READMAINBATTERYVOLTAGE";
@@ -476,6 +478,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
             messageIDList.append(message);
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READMOTORPWMS) {
             byteArray.append((char)LAUROBOT_READMOTORPWMS);
             qDebug() << "SENT: LAUROBOT_READMOTORPWMS";
@@ -483,6 +486,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
             messageIDList.append(message);
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READMOTORCURRENTS) {
             byteArray.append((char)LAUROBOT_READMOTORCURRENTS);
             qDebug() << "SENT: LAUROBOT_READMOTORCURRENTS";
@@ -492,6 +496,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
         } else if (message == LAUROBOT_SETLOGICBATTERYVOLTAGES) {
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READMAINBATTERYVOLTAGESETTINGS) {
             byteArray.append((char)LAUROBOT_READMAINBATTERYVOLTAGESETTINGS);
             qDebug() << "SENT: LAUROBOT_READMAINBATTERYVOLTAGESETTINGS";
@@ -499,6 +504,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
             messageIDList.append(message);
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READLOGICBATTERYVOLTAGESETTINGS) {
             byteArray.append((char)LAUROBOT_READLOGICBATTERYVOLTAGESETTINGS);
             qDebug() << "SENT: LAUROBOT_READLOGICBATTERYVOLTAGESETTINGS";
@@ -509,6 +515,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
         } else if (message == LAUROBOT_SETS3S4ANDS5MODES) {
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READS3S4ANDS5MODES) {
             byteArray.append((char)LAUROBOT_READS3S4ANDS5MODES);
             qDebug() << "SENT: LAUROBOT_READS3S4ANDS5MODES";
@@ -517,6 +524,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
         } else if (message == LAUROBOT_SETDEADBANDFORRCANALOGCONTROLS) {
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READDEADBANDFORRCANALOGCONTROLS) {
             byteArray.append((char)LAUROBOT_READDEADBANDFORRCANALOGCONTROLS);
             qDebug() << "SENT: LAUROBOT_READDEADBANDFORRCANALOGCONTROLS";
@@ -532,6 +540,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
             messageIDList.append(message);
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READTEMPERATURE) {
             byteArray.append((char)LAUROBOT_READTEMPERATURE);
             qDebug() << "SENT: LAUROBOT_READTEMPERATURE";
@@ -539,6 +548,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
             messageIDList.append(message);
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READTEMPERATURE2) {
             byteArray.append((char)LAUROBOT_READTEMPERATURE);
             qDebug() << "SENT: LAUROBOT_READTEMPERATURE2";
@@ -546,6 +556,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
             messageIDList.append(message);
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READSTATUS) {
             byteArray.append((char)LAUROBOT_READSTATUS);
             qDebug() << "SENT: LAUROBOT_READSTATUS";
@@ -562,7 +573,8 @@ void LAURobotObject::onSendMessage(int message, void *argument)
         else if (message == LAUROBOT_READSETTINGSFROMEEPROM) {
         } else if (message == LAUROBOT_SETSTANDARDCONGSETTINGS) {
         }
-// ASK
+//DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READSTANDARDCONGSETTINGS) {
             byteArray.append((char)LAUROBOT_READSTANDARDCONGSETTINGS);
             qDebug() << "SENT: LAUROBOT_READSTANDARDCONGSETTINGS";
@@ -571,6 +583,7 @@ void LAURobotObject::onSendMessage(int message, void *argument)
         } else if (message == LAUROBOT_SETCTRLMODES) {
         }
 //DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READCTRLMODES) {
             byteArray.append((char)LAUROBOT_READCTRLMODES);
             qDebug() << "SENT: LAUROBOT_READCTRLMODES";
@@ -579,20 +592,40 @@ void LAURobotObject::onSendMessage(int message, void *argument)
         } else if (message == LAUROBOT_SETCTRL1) {
         } else if (message == LAUROBOT_SETCTRL2) {
         }
-//TODO
+//DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READCTRLS) {
+            byteArray.append((char)LAUROBOT_READCTRLS);
+            qDebug() << "SENT: LAUROBOT_READCTRLS";
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
         } else if (message == LAUROBOT_SETM1MAXIMUMCURRENT) {
         } else if (message == LAUROBOT_SETM2MAXIMUMCURRENT) {
         }
-//TODO
+// ASK
+        //LAUROBOT_READM1MAXIMUMCURRENT - SAME AS DEFAULT DUTY CYCLE 4byte then 4 byte the 2 CRC byte
         else if (message == LAUROBOT_READM1MAXIMUMCURRENT) {
+            byteArray.append((char)LAUROBOT_READM1MAXIMUMCURRENT);
+            qDebug() << "SENT: LAUROBOT_READM1MAXIMUMCURRENT";
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
         }
-//TODO
+// ASK
+        //LAUROBOT_READM2MAXIMUMCURRENT - SAME AS DEFAULT DUTY CYCLE 4byte then 4 byte the 2 CRC byte
         else if (message == LAUROBOT_READM2MAXIMUMCURRENT) {
+            byteArray.append((char)LAUROBOT_READM2MAXIMUMCURRENT);
+            qDebug() << "SENT: LAUROBOT_READM2MAXIMUMCURRENT";
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
         } else if (message == LAUROBOT_SETPWMMODE) {
         }
-//TODO
+//DONE
+//checked 10/2/17 -MM
         else if (message == LAUROBOT_READPWMMODE) {
+            byteArray.append((char)LAUROBOT_READPWMMODE);
+            qDebug() << "SENT: LAUROBOT_READPWMMODE";
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
         }
     }
     return;
@@ -811,49 +844,64 @@ bool LAURobotObject::processMessage()
             }
             break;
         }
+// ASK
         case LAUROBOT_READDEFAULTDUTYCYCLEACCELERATIONS: {
-            qDebug() << "Length: " << messageArray.length();
-            if (messageArray.length() >= 10) {
-                if (checkCRC(messageArray.left(10), CRCReceive)){
-                    float rev = ((int)messageArray.at(0));
-                    float sfor = ((int)messageArray.at(4));
+            if (messageArray.length() >= 18) {
+                if (checkCRC(messageArray.left(18), CRCReceive)){
+                    double M1, M2;
+
+                    ((char*)&M1)[0] = messageArray.at(7);
+                    ((char*)&M1)[1] = messageArray.at(6);
+                    ((char*)&M1)[2] = messageArray.at(5);
+                    ((char*)&M1)[3] = messageArray.at(4);
+                    ((char*)&M1)[4] = messageArray.at(3);
+                    ((char*)&M1)[5] = messageArray.at(2);
+                    ((char*)&M1)[6] = messageArray.at(1);
+                    ((char*)&M1)[7] = messageArray.at(0);
+
+                    ((char*)&M2)[0] = messageArray.at(7);
+                    ((char*)&M2)[1] = messageArray.at(6);
+                    ((char*)&M2)[2] = messageArray.at(5);
+                    ((char*)&M2)[3] = messageArray.at(4);
+
                     qDebug() << "LAUROBOT_READDEFAULTDUTYCYCLEACCELERATIONS: ";
-                    qDebug() << "M1 Duty Cycle Accleration: "  << rev;
-                    qDebug() << "M2 Duty Cycle Accleration: "    << sfor;
+                    qDebug() << "M1 Duty Cycle Accleration: "  << M1;
+                    qDebug() << "M2 Duty Cycle Accleration: "  << M2;
                     emit emitMessage(message);
                 } else {
                     setError(QString("ERROR receiving LAUROBOT_READDEFAULTDUTYCYCLEACCELERATIONS message!"));
                     emit emitError(error());
                 }
-                messageArray = messageArray.remove(0, 10);
+                messageArray = messageArray.remove(0, 18);
                 messageIDList.takeFirst();
                 return (true);
             }
             break;
         }
         case LAUROBOT_READSTATUS: {
-            if (messageArray.length() >= 3) {
-                if (checkCRC(messageArray.left(3), CRCReceive)){
-                    float stat = ((uint8_t)messageArray.at(0) << 4 | (uint8_t)messageArray.at(1));
+            if (messageArray.length() >= 4) {
+                if (checkCRC(messageArray.left(4), CRCReceive)){
+                    uint8_t stat1 = ((uint8_t)messageArray.at(0));
+                    uint8_t stat2 = ((uint8_t)messageArray.at(1));
                     qDebug() << "LAUROBOT_READSTATUS: ";
-                    qDebug() << "Status: "  << stat;
+                    qDebug() << "Status: 0x"  << stat1 << stat2;
                     emit emitMessage(message);
                 } else {
                     setError(QString("ERROR receiving LAUROBOT_READSTATUS message!"));
                     emit emitError(error());
                 }
-                messageArray = messageArray.remove(0, 3);
+                messageArray = messageArray.remove(0, 4);
                 messageIDList.takeFirst();
                 return (true);
             }
             break;
         }
-        //DOUBLE CHECK
         case LAUROBOT_READSTANDARDCONGSETTINGS: {
             if (messageArray.length() >= 4) {
                 if (checkCRC(messageArray.left(4), CRCReceive)){
-                    uint8_t con = ((uint8_t)messageArray.at(0));
-                    qDebug() << "LAUROBOT_READSTANDARDCONGSETTINGS: " << con;
+                    uint8_t con1 = ((uint8_t)messageArray.at(0));
+                    uint8_t con2 = ((uint8_t)messageArray.at(0));
+                    qDebug() << "LAUROBOT_READSTANDARDCONGSETTINGS: 0x" << con1 << con2;
                     emit emitMessage(message);
                 } else {
                     setError(QString("ERROR receiving LAUROBOT_READSTANDARDCONGSETTINGS message!"));
@@ -879,6 +927,43 @@ bool LAURobotObject::processMessage()
                     emit emitError(error());
                 }
                 messageArray = messageArray.remove(0, 4);
+                messageIDList.takeFirst();
+                return (true);
+            }
+            break;
+        }
+        case LAUROBOT_READCTRLS: {
+            if (messageArray.length() >= 6) {
+                if (checkCRC(messageArray.left(6), CRCReceive)){
+                    uint8_t ctl1 = ((uint8_t)messageArray.at(0));
+                    uint8_t ctl2 = ((uint8_t)messageArray.at(2));
+                    qDebug() << "LAUROBOT_READCTRLS: ";
+                    qDebug() << "Control 1: " << ctl1;
+                    qDebug() << "Control 2: " << ctl2;
+                    emit emitMessage(message);
+                } else {
+                    setError(QString("ERROR receiving LAUROBOT_READCTRLS message!"));
+                    emit emitError(error());
+                }
+                messageArray = messageArray.remove(0, 6);
+                messageIDList.takeFirst();
+                return (true);
+            }
+            break;
+        }
+        //LAUROBOT_READM1MAXIMUMCURRENT - SAME AS DEFAULT DUTY CYCLE 4byte then 4 byte the 2 CRC byte
+        //LAUROBOT_READM2MAXIMUMCURRENT - SAME AS DEFAULT DUTY CYCLE 4byte then 4 byte the 2 CRC byte
+        case LAUROBOT_READPWMMODE: {
+            if (messageArray.length() >= 3) {
+                if (checkCRC(messageArray.left(3), CRCReceive)){
+                    uint8_t pwmMode = ((uint8_t)messageArray.at(0));
+                    qDebug() << "LAUROBOT_READPWMMODE: " << pwmMode;
+                    emit emitMessage(message);
+                } else {
+                    setError(QString("ERROR receiving LAUROBOT_READPWMMODE message!"));
+                    emit emitError(error());
+                }
+                messageArray = messageArray.remove(0, 3);
                 messageIDList.takeFirst();
                 return (true);
             }
