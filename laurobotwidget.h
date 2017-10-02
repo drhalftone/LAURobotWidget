@@ -102,7 +102,7 @@ class LAURobotObject : public LAUTCPSerialPortClient
     Q_OBJECT
 
 public:
-    LAURobotObject(QString portString, QObject *parent) : LAUTCPSerialPortClient(portString, parent), firmwareString(QString("DEMO")) { ; }
+    LAURobotObject(QString portString, QObject *parent) : LAUTCPSerialPortClient(portString, parent), firmwareString(QString("SERIAL DEMO")) { ; }
     LAURobotObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent), firmwareString(QString("DEMO")) { ; }
     ~LAURobotObject();
 
@@ -146,7 +146,8 @@ class LAURobotWidget : public LAUPaletteWidget
     Q_OBJECT
 
 public:
-    LAURobotWidget(QWidget *parent = 0);
+    LAURobotWidget(QString portString, QWidget *parent = 0);
+    LAURobotWidget(QString ipAddr, int portNum, QWidget *parent = 0);
     ~LAURobotWidget();
 
 protected:
