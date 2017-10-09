@@ -24,6 +24,7 @@
 #include "laurobotwidget.h"
 #include "laurplidarwidget.h"
 #include "lauodomwidget.h"
+#include "laupolhumeswidget.h"
 #else
 #include <QCoreApplication>
 #endif
@@ -60,8 +61,12 @@ int main(int argc, char *argv[])
     LAUTCPSerialPortServer s(-1, 60000);
 #endif
 
-#ifdef LAU_CLIENT
-    LAUOdomDialog w(QString(), -1, NULL);
+#if defined(LAU_CLIENT)
+#if defined(LAU_SERVER)
+    LAUPolhemusDialog w(QString(), -1, NULL);
+#else
+    LAUPolhemusDialog w((QString()));
+#endif
     if (w.isValid()) {
         return (w.exec());
     }

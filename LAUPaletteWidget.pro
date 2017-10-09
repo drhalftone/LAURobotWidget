@@ -18,16 +18,18 @@
 #**************************************************************************************************/
 CONFIG  -= server
 CONFIG  += client
-CONFIG  += ros
+CONFIG  -= ros
 
 QT      += core serialport network
 
 TEMPLATE = app
 
 SOURCES += main.cpp \
-           lautcpserialportwidget.cpp
+           lautcpserialportwidget.cpp \
+    laupolhumeswidget.cpp
 
-HEADERS += lautcpserialportwidget.h
+HEADERS += lautcpserialportwidget.h \
+    laupolhumeswidget.h
 
 ros {
     TARGET       = RosServer
@@ -84,9 +86,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-#unix:macx {
-#    QMAKE_MAC_SDK   = macosx10.12
-#    QMAKE_CXXFLAGS += -msse2 -msse3 -mssse3 -msse4.1
-#    INCLUDEPATH    += /usr/local/include /usr/local/include/eigen3
-#    #LIBS           += /usr/local/lib/libtiff.5.dylib
-#}
+unix:macx {
+    QMAKE_MAC_SDK   = macosx10.12
+    QMAKE_CXXFLAGS += -msse2 -msse3 -mssse3 -msse4.1
+    INCLUDEPATH    += /usr/local/include /usr/local/include/eigen3
+    DEPENDPATH     += /usr/local/include /usr/local/include/eigen3
+    LIBS           += /usr/local/lib/libtiff.dylib
+}

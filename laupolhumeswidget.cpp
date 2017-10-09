@@ -1,23 +1,23 @@
-#include "lauodomwidget.h"
+#include "laupolhumeswidget.h"
 
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAUOdomWidget::LAUOdomWidget(QString portString, QWidget *parent) : QWidget(parent), object(NULL)
+LAUPolhemusWidget::LAUPolhemusWidget(QString portString, QWidget *parent) : QWidget(parent), object(NULL)
 {
     // SET THE WINDOWS LAYOUT
-    this->setWindowTitle("LAUOdomWidget");
+    this->setWindowTitle("LAUPolhemusWidget");
     this->setLayout(new QVBoxLayout());
     this->layout()->setContentsMargins(0, 0, 0, 0);
 
     // CREATE LIDAR LABEL TO DISPLAY LIDAR DATA AS IT ARRIVES
-    label = new LAUOdomLabel();
+    label = new LAUPolhemusLabel();
     label->setMinimumHeight(200);
     label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->layout()->addWidget(label);
 
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
-    object = new LAUOdomObject(portString);
+    object = new LAUPolhemusObject(portString);
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
@@ -28,22 +28,22 @@ LAUOdomWidget::LAUOdomWidget(QString portString, QWidget *parent) : QWidget(pare
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAUOdomWidget::LAUOdomWidget(QString ipAddr, int portNum, QWidget *parent) : QWidget(parent), object(NULL)
+LAUPolhemusWidget::LAUPolhemusWidget(QString ipAddr, int portNum, QWidget *parent) : QWidget(parent), object(NULL)
 {
     // SET THE WINDOWS LAYOUT
-    this->setWindowTitle("LAUOdomWidget");
+    this->setWindowTitle("LAUPolhemusWidget");
     this->setLayout(new QVBoxLayout());
     this->layout()->setContentsMargins(0, 0, 0, 0);
 
     // CREATE LIDAR LABEL TO DISPLAY LIDAR DATA AS IT ARRIVES
-    label = new LAUOdomLabel();
+    label = new LAUPolhemusLabel();
     label->setMinimumHeight(200);
     label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     label->onEnableSavePoints(true);
     this->layout()->addWidget(label);
 
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
-    object = new LAUOdomObject(ipAddr, portNum);
+    object = new LAUPolhemusObject(ipAddr, portNum);
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
@@ -54,7 +54,7 @@ LAUOdomWidget::LAUOdomWidget(QString ipAddr, int portNum, QWidget *parent) : QWi
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAUOdomWidget::~LAUOdomWidget()
+LAUPolhemusWidget::~LAUPolhemusWidget()
 {
     if (object) {
         delete object;
@@ -64,7 +64,7 @@ LAUOdomWidget::~LAUOdomWidget()
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAUOdomLabel::LAUOdomLabel(QWidget *parent) : QLabel(parent), savePointsFlag(false), counter(0)
+LAUPolhemusLabel::LAUPolhemusLabel(QWidget *parent) : QLabel(parent), savePointsFlag(false), counter(0)
 {
     // RESTART THE TIMER
     time.restart();
@@ -79,7 +79,7 @@ LAUOdomLabel::LAUOdomLabel(QWidget *parent) : QLabel(parent), savePointsFlag(fal
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAUOdomLabel::mousePressEvent(QMouseEvent *event)
+void LAUPolhemusLabel::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::RightButton) {
         if (contextMenu) {
@@ -91,7 +91,7 @@ void LAUOdomLabel::mousePressEvent(QMouseEvent *event)
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAUOdomLabel::onEnableSavePoints(bool state)
+void LAUPolhemusLabel::onEnableSavePoints(bool state)
 {
     if (state) {
         points.clear();
@@ -104,7 +104,7 @@ void LAUOdomLabel::onEnableSavePoints(bool state)
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAUOdomLabel::onUpdateOdometry(QQuaternion pose, QVector3D position)
+void LAUPolhemusLabel::onUpdateOdometry(QQuaternion pose, QVector3D position)
 {
     qDebug() << pose << position;
 
@@ -141,17 +141,17 @@ void LAUOdomLabel::onUpdateOdometry(QQuaternion pose, QVector3D position)
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAUOdomLabel::onSavePoints()
+void LAUPolhemusLabel::onSavePoints()
 {
     // SAVE THE SCANNING DATA TO DISK
     QSettings settings;
-    QString directory = settings.value("LAUOdomWidget::lastDirectory", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+    QString directory = settings.value("LAUPolhemusWidget::lastDirectory", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
     QString filename = QFileDialog::getSaveFileName(this, QString("Save tracking data to disk (*.csv)"), directory, QString("*.csv"));
     if (filename.isEmpty() == false) {
         if (filename.toLower().endsWith(QString(".csv")) == false) {
             filename.append(QString(".csv"));
         }
-        settings.setValue("LAUOdomWidget::lastDirectory", QFileInfo(filename).absolutePath());
+        settings.setValue("LAUPolhemusWidget::lastDirectory", QFileInfo(filename).absolutePath());
 
         // OPEN A FILE TO SAVE THE RESULTS
         QFile file(filename);
@@ -169,7 +169,15 @@ void LAUOdomLabel::onSavePoints()
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAUOdomLabel::paintEvent(QPaintEvent *)
+void LAUPolhemusWidget::showEvent(QShowEvent *)
+{
+    object->onSendMessage(LAUPOLHEMUS_CONTINUOUS_PRINT_OUTPUT, NULL);
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+void LAUPolhemusLabel::paintEvent(QPaintEvent *)
 {
     // CREATE A PAINTER OBJECT TO DRAW ON SCREEN
     QPainter painter;
@@ -213,7 +221,7 @@ void LAUOdomLabel::paintEvent(QPaintEvent *)
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAUOdomObject::~LAUOdomObject()
+LAUPolhemusObject::~LAUPolhemusObject()
 {
     ;
 }
@@ -221,16 +229,24 @@ LAUOdomObject::~LAUOdomObject()
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAUOdomObject::onSendMessage(int message, void *argument)
+void LAUPolhemusObject::onSendMessage(int message, void *argument)
 {
-    Q_UNUSED(message);
-    Q_UNUSED(argument);
+    switch (message) {
+        case LAUPOLHEMUS_CONTINUOUS_PRINT_OUTPUT: {
+            QByteArray byteArray(1, LAUPOLHEMUS_CONTINUOUS_PRINT_OUTPUT);
+            this->write(byteArray);
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 }
 
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-void LAUOdomObject::onReadyRead()
+void LAUPolhemusObject::onReadyRead()
 {
     static QByteArray byteArray;
 
@@ -245,7 +261,7 @@ void LAUOdomObject::onReadyRead()
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-QByteArray LAUOdomObject::processMessage(QByteArray byteArray)
+QByteArray LAUPolhemusObject::processMessage(QByteArray byteArray)
 {
     // MAKE SURE WE HAVE ENOUGH BYTES FOR A COMPLETE MESSAGE
     while (byteArray.length() > (int)(7 * sizeof(double))) {
