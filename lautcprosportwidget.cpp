@@ -226,6 +226,7 @@ void LAUTCPROSPort::callback(const nav_msgs::Odometry::ConstPtr &msg)
         buffer[4] = msg->pose.pose.position.x;
         buffer[5] = msg->pose.pose.position.y;
         buffer[6] = msg->pose.pose.position.z;
+        buffer[7] = 0;
 
         socket->write((char *)&buffer[0], sizeof(double) * 7);
     }
