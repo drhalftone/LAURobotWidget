@@ -28,7 +28,7 @@ LAURPLidarWidget::LAURPLidarWidget(QString portString, QWidget *parent) : QWidge
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
-        connect(object, SIGNAL(emitPoint(QPoint)), label, SLOT(onAddPoint(QPoint)), Qt::DirectConnection);
+        connect(object, SIGNAL(emitScan(QVector<QPoint>)), label, SLOT(onAddPoints(QVector<QPoint>)), Qt::DirectConnection);
     }
 }
 
@@ -95,7 +95,7 @@ void LAURPLidarObject::onInitiateScanning()
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAURPLidarLabel::LAURPLidarLabel(QWidget *parent) : QLabel(parent), savePointsFlag(false), counter(0)
+LAURPLidarLabel::LAURPLidarLabel(QWidget *parent) : QLabel(parent), savePointsFlag(true), counter(0)
 {
     // RESTART THE TIMER
     time.restart();

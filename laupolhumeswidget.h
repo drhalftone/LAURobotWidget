@@ -45,6 +45,8 @@ public:
     LAUPolhemusObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent) { ; }
     ~LAUPolhemusObject();
 
+    static QQuaternion quaternion(double pitch, double roll, double azimuth);
+
 public slots:
     void onReadyRead();
     void onSendMessage(int message, void *argument);

@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef LAU_SERVER
-    LAUTCPSerialPortServer s(-1, 60000);
+    LAUTCPSerialPortServer s(-1, -1);
 #endif
 
 #if defined(LAU_CLIENT)
