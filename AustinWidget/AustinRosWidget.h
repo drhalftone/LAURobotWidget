@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <QInputDialog>
 #include <QObject>
 #include <QTimerEvent>
@@ -15,6 +16,7 @@
 #include <ros/master.h>
 #include <ros/spinner.h>
 #include <rosgraph_msgs/Log.h>
+#include <sensor_msgs/Image.h>
 #include <nav_msgs/Odometry.h>
 #endif
 
@@ -23,6 +25,7 @@ class Austin_ROS_MSGS : public QObject
     Q_OBJECT
 
 public:
+    explicit Austin_ROS_MSGS();
     //explicit Austin_ROS_MSGS(QString tpc, QString dType, QObject *parent = 0);
     //~Austin_ROS_MSGS();
 
@@ -36,6 +39,7 @@ public:
     /* ROS TOPIC  INFO GETTER FUNCTIONS */
     void callbackLog(const rosgraph_msgs::Log::ConstPtr &log_msg);
     void callbackOdometry(const nav_msgs::Odometry::ConstPtr &msg);
+    void callbackColorCamera(const sensor_msgs::Image::ConstPtr &msg);
 
     void printMSGS(QString topic);
 

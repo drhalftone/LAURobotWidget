@@ -16,19 +16,17 @@ int main(int argc, char *argv[])
     ros::start();
 
     Austin_ROS_MSGS msg;
-
-    QString Qtopic;
     std::string topic;
-
-    qDebug ("Hit Enter to continue");
-    std::cin >> topic;
-    Qtopic.fromStdString(topic);
-    msg.printMSGS(Qtopic);
+    QString Qtopic;
+    //ros::spinOnce();
     while (1) {
-        qDebug ("Enter in the ROS Topic that you would like to view: ");
-        std::cin >> topic;
-        Qtopic.fromStdString(topic);
+        //ros::spinOnce();
+        qDebug ("Enter in the ROS Topic that you would like to view, "
+                "Enter 'topics' to view all available topics that you can subscribe to: ");
+        std::getline(std::cin,topic);       
+        Qtopic = QString::fromStdString(topic);
         msg.printMSGS(Qtopic);
+        //ros::spinOnce();
     }
 #endif
 
