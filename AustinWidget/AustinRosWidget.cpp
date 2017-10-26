@@ -58,6 +58,7 @@ void Austin_ROS_MSGS::callbackLog(const rosgraph_msgs::Log::ConstPtr & log_msg)
     qDebug() << "";
    }
     subscriber.shutdown();
+    ros::shutdown();
 
 }
 
@@ -81,6 +82,7 @@ void Austin_ROS_MSGS::callbackOdometry(const nav_msgs::Odometry::ConstPtr &msg)
             qDebug() << buffer[i] << endl;
         }
         subscriber.shutdown();
+        ros::shutdown();
 
 }
 /******************************************************************************/
@@ -98,14 +100,16 @@ void Austin_ROS_MSGS::callbackColorCamera(const sensor_msgs::Image::ConstPtr &ms
     uint32_t width = msg->width; //omage width, number of columns
     uint8_t is_bigendian = msg->is_bigendian; //Is this data big endian?
     uint32_t matrix_size = step*height;
-    uint8_t image_data[matrix_size];
+    std::vector<uint8_t> image_data(matrix_size);
 
     for (uint32_t i = 0; i < matrix_size; ++i)
     {
         image_data[i] = msg->data[i];
     }
+    /* PROCESS CAMERA DATA */
 
     subscriber.shutdown();
+    ros::shutdown();
 
 
 }
@@ -123,17 +127,17 @@ void Austin_ROS_MSGS::printMSGS(QString topic)
         if (topicString == QString("rosout")){
             qDebug() << "subscribing to rosout\n";
             subscriber = node.subscribe(topicString.toStdString(), 1000, &Austin_ROS_MSGS::callbackLog, this);
-            ros::spinOnce();
+            ros::spin();
         }
         else if (topicString == QString("odometry")){
             qDebug() << "subscribing to odometry\n";
             subscriber = node.subscribe(topicString.toStdString(), 1000, &Austin_ROS_MSGS::callbackOdometry, this);
-            ros::spinOnce();
+            ros::spin();
         }
         else if (topicString == QString("topics")){
             qDebug() << "subscribing to topics\n";
             subscriber = node.subscribe("rosout", 1000, &Austin_ROS_MSGS::callbackLog, this);
-            ros::spinOnce();
+            ros::spin();
         }
         else if (topicString == QString("camera/color/image_raw")){
             qDebug() << "subscribing to camera/color/image_raw\n";
