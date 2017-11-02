@@ -16,7 +16,7 @@
 #    along with LAURobotWidget.  If not, see <http://www.gnu.org/licenses/>.
 #
 #**************************************************************************************************/
-CONFIG  += server
+CONFIG  -= server
 CONFIG  += client
 CONFIG  -= ros
 
@@ -71,9 +71,9 @@ client {
 }
 
 # INCLUDE BONJOUR
-#include(QtZeroConf/qtzeroconf.pri)
-INCLUDEPATH += /usr/local/include
-LIBS        += -L/usr/local/lib -lQtZeroConf
+include(QtZeroConf/qtzeroconf.pri)
+#INCLUDEPATH += /usr/local/include
+#LIBS        += -L/usr/local/lib -lQtZeroConf
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
