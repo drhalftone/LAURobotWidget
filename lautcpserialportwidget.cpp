@@ -64,7 +64,7 @@ LAUTCPSerialPort::LAUTCPSerialPort(QString string, int prtNmbr, QObject *parent)
 {
     // SET THE SERIAL PORT SETTINGS
     port.setPortName(portString);
-    port.setBaudRate(QSerialPort::Baud115200);
+    port.setBaudRate(QSerialPort::Baud38400);
     port.setDataBits(QSerialPort::Data8);
     port.setStopBits(QSerialPort::OneStop);
     port.setParity(QSerialPort::NoParity);
@@ -271,7 +271,7 @@ LAUTCPSerialPortClient::LAUTCPSerialPortClient(QString portString, QObject *pare
 
         // SET THE SERIAL PORT SETTINGS
         ((QSerialPort *)port)->setPortName(portString);
-        ((QSerialPort *)port)->setBaudRate(QSerialPort::Baud115200);
+        ((QSerialPort *)port)->setBaudRate(QSerialPort::Baud38400);
         ((QSerialPort *)port)->setDataBits(QSerialPort::Data8);
         ((QSerialPort *)port)->setStopBits(QSerialPort::OneStop);
         ((QSerialPort *)port)->setParity(QSerialPort::NoParity);

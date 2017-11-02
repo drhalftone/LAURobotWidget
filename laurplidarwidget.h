@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QApplication>
 #include <QInputDialog>
+#include <QMouseEvent>
 
 #include <QTime>
 #include <QList>
