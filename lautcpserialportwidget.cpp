@@ -21,13 +21,16 @@
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-LAUTCPSerialPortServer::LAUTCPSerialPortServer(int num, unsigned short identifier, QObject *parent) : QObject(parent)
+LAUTCPSerialPortServer::LAUTCPSerialPortServer(int num, unsigned short identifier, QString idstring, QObject *parent) : QObject(parent)
 {
     // DROP IN DEFAULT PORT NUMBER IF USER SUPPLIED VALUE IS NEGATIVE
     if (num < 100) {
         num = LAUTCPSERIALPORTSERVERPORTNUMER;
     }
-
+    if (idstring.length() < 1)
+    {
+        idstring = "_lautcpserialportserver._tcp";
+    }
     // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
     QList<QSerialPortInfo> portList = QSerialPortInfo::availablePorts();
     for (int m = 0; m < portList.count(); m++) {
@@ -60,7 +63,7 @@ LAUTCPSerialPortServer::~LAUTCPSerialPortServer()
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-LAUTCPSerialPort::LAUTCPSerialPort(QString string, int prtNmbr, QObject *parent) : QTcpServer(parent), connected(false), portNumber(prtNmbr), portString(string), port(NULL), socket(NULL), zeroConf(NULL)
+LAUTCPSerialPort::LAUTCPSerialPort(QString string, int prtNmbr, QString idstring, QObject *parent) : QTcpServer(parent), connected(false), portNumber(prtNmbr), portString(string), port(NULL), socket(NULL), zeroConf(NULL)
 {
     // SET THE SERIAL PORT SETTINGS
     port.setPortName(portString);
@@ -77,7 +80,11 @@ LAUTCPSerialPort::LAUTCPSerialPort(QString string, int prtNmbr, QObject *parent)
     zeroConf = new QZeroConf();
     connect(zeroConf, SIGNAL(error(QZeroConf::error_t)), this, SLOT(onServiceError(QZeroConf::error_t)));
     connect(zeroConf, SIGNAL(servicePublished()), this, SLOT(onServicePublished()));
-    zeroConf->startServicePublish(portString.toUtf8(), "_lautcpserialportserver._tcp", "local", portNumber);
+    if (idstring.length() < 1)
+    {
+        idstring = "_lautcpserialportserver._tcp";
+    }
+    zeroConf->startServicePublish(portString.toUtf8(), idstring, "local", portNumber);
 }
 
 /******************************************************************************/
