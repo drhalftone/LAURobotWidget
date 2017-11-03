@@ -91,7 +91,7 @@ void LAUZeroConfClientWidget::onServiceError(QZeroConf::error_t error)
 /******************************************************************************/
 void LAUZeroConfClientWidget::onAddService(QZeroConfService *item)
 {
-    tcpAddressComboBox->addItem(QString("%1::%2").arg(item->name).arg(item->port), item->ip.toString());
+    tcpAddressComboBox->addItem(QString("%1::%2").arg(item->name()).arg(item->port()), item->ip().toString());
 }
 
 /******************************************************************************/
@@ -99,7 +99,7 @@ void LAUZeroConfClientWidget::onAddService(QZeroConfService *item)
 /******************************************************************************/
 void LAUZeroConfClientWidget::onRemoveService(QZeroConfService *item)
 {
-    tcpAddressComboBox->removeItem(tcpAddressComboBox->findText(QString("%1::%2").arg(item->name).arg(item->port)));
+    tcpAddressComboBox->removeItem(tcpAddressComboBox->findText(QString("%1::%2").arg(item->name()).arg(item->port())));
 }
 
 /******************************************************************************/

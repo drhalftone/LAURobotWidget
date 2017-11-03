@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
 #if defined(LAU_CLIENT)
 #if defined(LAU_SERVER)
     LAUPolhemusDialog w(QString(), -1, NULL);
+#endif
 #else
     LAUPolhemusDialog w((QString()));
 #endif

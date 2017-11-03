@@ -4,6 +4,7 @@
 #include <QMenu>
 #include <QWidget>
 #include <QGroupBox>
+#include <QMouseEvent>
 #include <QQuaternion>
 #include <QMessageBox>
 #include <QPushButton>
