@@ -63,9 +63,9 @@ int main(int argc, char *argv[])
 
 #if defined(LAU_CLIENT)
 #if defined(LAU_SERVER)
-    LAUPolhemusDialog w(QString(), -1, NULL);
+    LAURPLidarDialog w(QString(), -1, NULL);
 #else
-    LAUPolhemusDialog w((QString()));
+    LAURPLidarDialog w((QString()));
 #endif
     if (w.isValid()) {
         return (w.exec());

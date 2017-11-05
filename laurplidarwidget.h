@@ -3,6 +3,7 @@
 
 #include <QMenu>
 #include <QWidget>
+#include <QString>
 #include <QGroupBox>
 #include <QMessageBox>
 #include <QPushButton>
@@ -47,8 +48,18 @@ class LAURPLidarObject : public LAUTCPSerialPortClient
 public:
     enum ScanState { StateNotScanning, StateExpressScan, StateScan };
 
-    LAURPLidarObject(QString portString, QObject *parent = 0) : LAUTCPSerialPortClient(portString, parent), scanState(StateNotScanning), scan(32) { ; }
-    LAURPLidarObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent), scanState(StateNotScanning), scan(32) { ; }
+    LAURPLidarObject(QString portString, QObject *parent = 0) : LAUTCPSerialPortClient(portString, parent), scanState(StateNotScanning), scan(32)
+    {
+        record.setFileName(QString("/tmp/record.txt"));
+        record.open(QIODevice::WriteOnly);
+    }
+
+    LAURPLidarObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent), scanState(StateNotScanning), scan(32)
+    {
+        record.setFileName(QString("/tmp/record.txt"));
+        record.open(QIODevice::WriteOnly);
+    }
+
     ~LAURPLidarObject();
 
 public slots:
@@ -90,6 +101,8 @@ private:
     QVector<QPoint> scan;
 
     QPoint getPoint(double Aa, double Ab, double dA, double D, int k);
+
+    QFile record;
 
 private slots:
     void onSendNextMessage();
