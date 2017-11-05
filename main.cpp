@@ -17,6 +17,24 @@
 
 **************************************************************************************************/
 
+/* NOTES: -MM
+ *
+ * For Palette Motor Interactions, see laurobotwidget.cpp and laurobotwidget.h
+ *
+ * For Palette setup and config, see laupalettewidget.cpp and laupalettewidget.h
+ *
+ * For RPLidar setup and config, see laurplidarwidget.cpp and laurplidarwidget.h
+ *
+ * For ROS setup and config, see lautcprosportwidget.cpp and lautcprosportwidget.h
+ *
+ * For TCP Serial connection and settings, see lautcpserialportwidget.cpp and lautcpserialportwidget.h
+ *
+ * lauzeroconfwidget.cpp and lauzeroconfwidget.h should not be modified right now -MM
+ *
+ */
+
+
+
 #ifdef LAU_CLIENT
 #include <QApplication>
 
@@ -63,14 +81,16 @@ int main(int argc, char *argv[])
 
 #if defined(LAU_CLIENT)
 #if defined(LAU_SERVER)
-    LAURPLidarDialog w(QString(), -1, NULL);
-#else
-    LAURPLidarDialog w((QString()));
+    LAUPolhemusDialog w(QString(), -1, NULL);
 #endif
-    if (w.isValid()) {
-        return (w.exec());
-    }
-    return (0);
+#else
+    LAUPolhemusDialog w((QString()));
+#endif
+
+#ifdef LAU_CLIENT
+    LAURobotWidget w(QString(), (QWidget*)NULL);
+    w.show();
+    return a.exec();
 #else
     return (a.exec());
 #endif
