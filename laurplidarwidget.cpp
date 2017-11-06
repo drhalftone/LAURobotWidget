@@ -262,6 +262,8 @@ void LAURPLidarLabel::paintEvent(QPaintEvent *)
 /****************************************************************************/
 LAURPLidarObject::~LAURPLidarObject()
 {
+    record.close();
+
     if (isValid()) {
         // STOP THE SCANNER
         onStop();
@@ -600,6 +602,7 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
                         }
 
                         // ITERATE THROUGH ALL 32 MEASUREMENTS
+                        double angles[32];
                         for (int n = 0; n < 16; n++) {
                             // GET THE FIRST OF TWO MEASUREMENTS WITHIN THE CURRENT PAIR
                             double dTheta1 = (16.0 * (int)(byteArray.at(4 + 5 * n + 0) & 0x03) + (int)(byteArray.at(4 + 5 * n + 4) & 0x0F));
@@ -610,6 +613,9 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
                             double dTheta2 = (16.0 * (int)(byteArray.at(4 + 5 * n + 2) & 0x03) + (int)((byteArray.at(4 + 5 * n + 4) & 0xF0) >> 4));
                             double distance2 = 64.0 * (int)byteArray.at(4 + 5 * n + 3) + (int)((byteArray.at(4 + 5 * n + 2) >> 1) & 0x3F);
                             scan[2 * n + 1] = getPoint(angleA, angleB, dTheta2, distance2, 2 * n + 1);
+
+                            angles[2 * n + 0] = qAtan2(scan[2 * n + 0].y(), scan[2 * n + 0].x());
+                            angles[2 * n + 1] = qAtan2(scan[2 * n + 1].y(), scan[2 * n + 1].x());
                         }
 
                         // SEND OUR SCAN VECTOR TO OUR LIDAR LABEL
@@ -634,7 +640,9 @@ QByteArray LAURPLidarObject::processMessage(QByteArray byteArray)
 QPoint LAURPLidarObject::getPoint(double Aa, double Ab, double dA, double D, int k)
 {
     double angleDiff = (Aa > Ab) ? (Aa - Ab) : (360.0 + Aa - Ab);
-    double angle = ((double)Aa + (angleDiff * k / 32.0) - dA) * 0.017453292519943;
+    double angle = 3.141592653589793 - ((double)Aa + (angleDiff * k / 32.0) - dA) * 0.017453292519943;
+
+    record.write(QString("%1, %2\n").arg((double)D * qCos(angle), 0, 'f', 4).arg((double)D * qSin(angle), 0, 'f', 4).toLatin1());
     return (QPoint((double)D * qCos(angle), (double)D * qSin(angle)));
 }
 

@@ -158,7 +158,7 @@ void LAURobotWidget::onButtonPressed(QPoint pos)
     // DETERMINE IF SIGNAL IS FROM PUSH BUTTON
     if (pos == QPoint(0, 1)) {
 
-        emit emitMessage(LAUROBOT_READSETTINGSFROMEEPROM);
+//        emit emitMessage(LAUROBOT_READSETTINGSFROMEEPROM);
     }
 }
 
@@ -177,13 +177,13 @@ void LAURobotWidget::onButtonReleased(QPoint pos)
     if (pos == QPoint(0, 1)) {
         //Setting the motor value to 0 so that the motors will stop.//
 
-        emit emitMessage(LAUROBOT_RESTOREDEFAULTS);
+//        emit emitMessage(LAUROBOT_RESTOREDEFAULTS);
 
 
-//        unsigned char val = 0;
-//        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
-//        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
-//        qDebug() << "SENT: ALL STOP";
+        unsigned char val = 0;
+        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
+        emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
+        qDebug() << "SENT: ALL STOP";
     }
 }
 
