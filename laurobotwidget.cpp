@@ -41,11 +41,8 @@ LAURobotWidget::LAURobotWidget(QString ipAddr, int portNum, QWidget *parent) : L
 
     this->registerLayout(packets);
 
-
-
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
-    //robot = new LAURobotObject(ipAddr, portNum, NULL);
-    robot = new LAURobotObject(QString(), (QObject *)NULL);
+    robot = new LAURobotObject(ipAddr, portNum, NULL);
     connect(this, SIGNAL(emitMessage(int, void *)), robot, SLOT(onSendMessage(int, void *)));
     connect(robot, SIGNAL(emitMessage(int, void *)), this, SLOT(onReceiveMessage(int, void *)));
     connect(robot, SIGNAL(emitError(QString)), this, SLOT(onTCPError(QString)));

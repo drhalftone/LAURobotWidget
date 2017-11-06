@@ -34,7 +34,6 @@
  */
 
 
-
 #ifdef LAU_CLIENT
 #include <QApplication>
 
@@ -84,11 +83,11 @@ int main(int argc, char *argv[])
     LAUPolhemusDialog w(QString(), -1, NULL);
 #endif
 #else
-    LAUPolhemusDialog w((QString()));
+    //LAUPolhemusDialog w((QString()));
 #endif
 
 #ifdef LAU_CLIENT
-    LAURobotWidget w(QString(), (QWidget*)NULL);
+    LAURobotWidget w(QString(), -1, (QWidget*)NULL);
     w.show();
     return a.exec();
 #else
