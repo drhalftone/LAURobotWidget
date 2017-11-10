@@ -55,7 +55,7 @@ LAUTCPROSPort::LAUTCPROSPort(QString tpc, QString dType, int prtNmbr, QObject *p
 #ifdef LAU_ROS
     // SET THE SERIAL PORT SETTINGS
     if (node.ok()) {
-        subscriber = node.subscribe(topicString.toStdString(), 1000, &LAUTCPROSPort::callback, this);
+        subscriber = node.subscribe(topicString.toStdString(), 1000, &LAUTCPROSPort::callbackOdom, this);
     } else {
         qDebug() << "ERROR: Node not ok.";
     }
@@ -214,9 +214,10 @@ void LAUTCPROSPort::onTcpError(QAbstractSocket::SocketError error)
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-void LAUTCPROSPort::callback(const nav_msgs::Odometry::ConstPtr &msg)
+void LAUTCPROSPort::callbackOdom(const nav_msgs::Odometry::ConstPtr &msg)
 {
-    if (isConnected()) {
+    qDebug() << "LAUTCPROSPort::callbackOdom(const nav_msgs::Odometry::ConstPtr &msg)";
+    if (isConnected()){
         double buffer[7];
         buffer[0] = msg->pose.pose.orientation.w;
         buffer[1] = msg->pose.pose.orientation.x;
@@ -226,9 +227,177 @@ void LAUTCPROSPort::callback(const nav_msgs::Odometry::ConstPtr &msg)
         buffer[4] = msg->pose.pose.position.x;
         buffer[5] = msg->pose.pose.position.y;
         buffer[6] = msg->pose.pose.position.z;
-        buffer[7] = 0;
 
-        socket->write((char *)&buffer[0], sizeof(double) * 7);
+        socket->write((char*)&buffer[0], sizeof(double)*7);
     }
 }
+
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+void LAUTCPROSPort::callbackColorCamera(const sensor_msgs::Image::ConstPtr &msg)
+/*
+ * Encoding of pixels -- channel meaning, ordering, size taken from the list
+ * of string in include/sensor_msgs/image_encodings.h
+ */
+{
+    qDebug() << "LAUTCPROSPORT::callbackColorCamera(const sensor_msgs::Image::ConstPtr &msg)\n";
+
+    // Encoding of pixels -- channel meaning, ordering, size taken from the list
+    // of string in include/sensor_msgs/image_encodings.h
+    if (isConnected()) {
+        //std::string encoding = msg->encoding;
+        socket->write((char*)&(msg->step), sizeof(int));
+        socket->write((char*)&(msg->height), sizeof(int));
+        socket->write((char*)&(msg->width), sizeof(int));
+        socket->write((char*)&(msg->is_bigendian), sizeof(unsigned char));
+        for ( int i = 0; i < msg->data.size(); ++i)
+        {
+            socket->write((char*)msg->data[i], msg->step * msg->height);
+        }
+    }
+}
+
+void LAUTCPROSPort::callbackPointCloud2(const sensor_msgs::PointCloud2::ConstPtr &msg)
+/*
+* This message holds a collection of N-dimensional points, which may
+* contain additional information such as normals, intensity, etc. The
+* point data is stored as a binary blob, its layout described by the
+* contents of the "fields" array.
+* The point cloud data may be organized 2d (image-like) or 1d
+* (unordered). Point clouds organized as 2d images may be produced by
+* camera depth sensors such as stereo or time-of-flight.
+*/
+{
+    qDebug() << "LAUTCPROSPort::callbackPointCloud2(const sensor_msgs::PointCloud2::ConstPtr &msg)\n";
+
+    //Time of sensor data acquisition, and the coordinate frame ID (for 3d
+    //points).
+    if (isConnected()) {
+        //ros::Header header = msg->header;
+
+        socket->write((char*)&(msg->header), sizeof(unsigned char));
+        socket->write((char*)&(msg->point_step), sizeof(int));
+        socket->write((char*)&(msg->row_step), sizeof(int));
+        socket->write((char*)&(msg->height), sizeof(int));
+        socket->write((char*)&(msg->width), sizeof(int));
+        socket->write((char*)&(msg->is_bigendian), sizeof(unsigned char));
+        for ( int i = 0; i < msg->data.size(); ++i)
+        {
+            socket->write((char*)&(msg->data[i]), msg->row_step * msg->height);
+        }
+    }
+}
+
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+void LAUTCPROSPort::callbackIMU(const sensor_msgs::Imu::ConstPtr &msg)
+/*
+* This is a message to hold data from an IMU (Inertial Measurement Unit)
+*
+* Accelerations should be in m/s^2 (not in g's), and rotational velocity should be in rad/sec
+*
+* If the covariance of the measurement is known, it should be filled in (if all you know is the
+* variance of each measurement, e.g. from the datasheet, just put those along the diagonal)
+* A covariance matrix of all zeros will be interpreted as "covariance unknown", and to use the
+* data a covariance will have to be assumed or gotten from some other source
+*
+* If you have no estimate for one of the data elements (e.g. your IMU doesn't produce an orientation
+* estimate), please set element 0 of the associated covariance matrix to -1
+* If you are interpreting this message, please check for a value of -1 in the first element of each
+* covariance matrix, and disregard the associated estimate.
+*/
+{void callback(const nav_msgs::Odometry::ConstPtr &msg);
+    if (isConnected()) {
+        qDebug() << "LAUTCPROSPort::callbackIMU(const sensor_msgs::Imu::ConstPtr &msg)\n";
+
+        //ros::Header header = msg->header; TODO
+
+        double buffer[36];
+        /* Quaternion Orientation */
+        buffer[0] = msg->orientation.x;
+        buffer[1] = msg->orientation.y;
+        buffer[2] = msg->orientation.z;
+        buffer[3] = msg->orientation.w;
+
+        /* Orientation Covariance */
+        buffer[4] = msg->orientation_covariance[0];
+        buffer[5] = msg->orientation_covariance[1];
+        buffer[6] = msg->orientation_covariance[2];
+        buffer[7] = msg->orientation_covariance[3];
+        buffer[8] = msg->orientation_covariance[4];
+        buffer[9] = msg->orientation_covariance[5];
+        buffer[10] = msg->orientation_covariance[6];
+        buffer[11] = msg->orientation_covariance[7];
+        buffer[12] = msg->orientation_covariance[8];
+
+        /* Angular Velocity */
+        buffer[13] = msg->angular_velocity.x;
+        buffer[14] = msg->angular_velocity.y;
+        buffer[15] = msg->angular_velocity.z;
+
+        /* Angular velocity Covariance */
+        buffer[16] = msg->angular_velocity_covariance[0];
+        buffer[17] = msg->angular_velocity_covariance[1];
+        buffer[18] = msg->angular_velocity_covariance[2];
+        buffer[19] = msg->angular_velocity_covariance[3];
+        buffer[20] = msg->angular_velocity_covariance[4];
+        buffer[21] = msg->angular_velocity_covariance[5];
+        buffer[22] = msg->angular_velocity_covariance[6];
+        buffer[23] = msg->angular_velocity_covariance[7];
+        buffer[24] = msg->angular_velocity_covariance[8];
+
+        /* Linear Acceleration */
+        buffer[25] = msg->linear_acceleration.x;
+        buffer[26] = msg->linear_acceleration.y;
+        buffer[27] = msg->linear_acceleration.z;
+
+        /* Linear Acceleration Covariance */
+        buffer[28] = msg->linear_acceleration_covariance[0];
+        buffer[29] = msg->linear_acceleration_covariance[1];
+        buffer[30] = msg->linear_acceleration_covariance[2];
+        buffer[31] = msg->linear_acceleration_covariance[3];
+        buffer[32] = msg->linear_acceleration_covariance[4];
+        buffer[33] = msg->linear_acceleration_covariance[5];
+        buffer[34] = msg->linear_acceleration_covariance[6];
+        buffer[35] = msg->linear_acceleration_covariance[7];
+        buffer[36] = msg->linear_acceleration_covariance[8];
+
+
+        socket->write((char*)&buffer[0], sizeof(double)*37);
+    }
+}
+
+
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+void LAUTCPROSPort::callbackLog(const rosgraph_msgs::Log::ConstPtr & log_msg)
+/* This is a message to get INFO messaged that ROS procduces */
+{
+    if(isConnected()) {
+        QString msg_buffer[5];
+
+        /*Determine which level of Log.msg we are getting */
+        int severity_level = log_msg->INFO;
+        switch (severity_level)
+        {
+        case 1 : msg_buffer[0] = "DEBUG"; break;
+        case 2 : msg_buffer[0] = "INFO"; break;
+        case 4 : msg_buffer[0] = "WARN"; break;
+        case 8 : msg_buffer[0] = "ERROR"; break;
+        case 16 : msg_buffer[0] = "FATAL/CRITICAL"; break;
+        default : return; break;
+        }
+        msg_buffer[1] = QString::fromStdString(log_msg->name);
+        msg_buffer[2] = QString::fromStdString(log_msg->msg);
+        msg_buffer[3] = QString::fromStdString(log_msg->file);
+        msg_buffer[4] = QString::fromStdString(log_msg->function);
+        //msg_buffer[5] = QString::fromStdString(log_msg->header);
+
+        //socket->write((char*)&buffer[0], sizeof(double)*31)
+    }
+}
+
 #endif

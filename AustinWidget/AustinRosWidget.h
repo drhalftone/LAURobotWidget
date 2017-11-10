@@ -17,6 +17,8 @@
 #include <ros/spinner.h>
 #include <rosgraph_msgs/Log.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
 #endif
 
@@ -38,8 +40,10 @@ public:
 #ifdef Austin_ROS
     /* ROS TOPIC  INFO GETTER FUNCTIONS */
     void callbackLog(const rosgraph_msgs::Log::ConstPtr &log_msg);
-    void callbackOdometry(const nav_msgs::Odometry::ConstPtr &msg);
     void callbackColorCamera(const sensor_msgs::Image::ConstPtr &msg);
+    void callbackImuData(const sensor_msgs::Imu::ConstPtr &msg);
+    void callbackOdometry(const nav_msgs::Odometry::ConstPtr &msg);
+    void callbackPointCloud2(const sensor_msgs::PointCloud2::ConstPtr &msg);
 
     void printMSGS(QString topic);
 

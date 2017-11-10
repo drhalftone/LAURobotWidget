@@ -25,7 +25,7 @@
 #include <QInputDialog>
 
 #include "lauzeroconfwidget.h"
-#else
+//#else
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -36,6 +36,11 @@
 #include <ros/ros.h>
 #include <ros/master.h>
 #include <nav_msgs/Odometry.h>
+#include <ros/spinner.h>
+#include <rosgraph_msgs/Log.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/Imu.h>
 #endif
 #endif
 
@@ -77,7 +82,11 @@ public:
     }
 
 #ifdef LAU_ROS
-    void callback(const nav_msgs::Odometry::ConstPtr &msg);
+    void callbackOdom(const nav_msgs::Odometry::ConstPtr &msg);
+    void callbackColorCamera(const sensor_msgs::Image::ConstPtr &msg);
+    void callbackPointCloud2(const sensor_msgs::PointCloud2::ConstPtr &msg);
+    void callbackIMU(const sensor_msgs::Imu::ConstPtr &msg);
+    void callbackLog(const rosgraph_msgs::Log::ConstPtr &log_msg);
 
     bool isValid() const
     {

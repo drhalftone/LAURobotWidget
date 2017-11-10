@@ -18,7 +18,7 @@
 #**************************************************************************************************/
 CONFIG  -= server
 CONFIG  += client
-CONFIG  -= ros
+CONFIG  += ros
 
 QT      += core serialport network
 
@@ -26,10 +26,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
            lautcpserialportwidget.cpp \
-    laupolhumeswidget.cpp
+    laupolhumeswidget.cpp \
+    austincolorcamwidget.cpp
 
 HEADERS += lautcpserialportwidget.h \
-    laupolhumeswidget.h
+    laupolhumeswidget.h \
+    austincolorcamwidget.h
 
 ros {
     TARGET       = RosServer
