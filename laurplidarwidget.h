@@ -29,6 +29,7 @@
 
 #include "lautcpserialportwidget.h"
 
+#define LAURPLIDAR_SERVERIDSTRING   "lautcprplidarserver._tcp"
 #define LAURPLIDAR_FIXED_BYTE     0xA5
 #define LAURPLIDAR_STOP           0x25
 #define LAURPLIDAR_RESET          0x40
@@ -55,7 +56,7 @@ public:
         record.open(QIODevice::WriteOnly);
     }
 
-    LAURPLidarObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent), scanState(StateNotScanning), scan(32)
+    LAURPLidarObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, QString(LAURPLIDAR_SERVERIDSTRING), parent), scanState(StateNotScanning), scan(32)
     {
         record.setFileName(QString("/tmp/record.txt"));
         record.open(QIODevice::WriteOnly);
@@ -111,6 +112,18 @@ private slots:
 signals:
     void emitError(QString string);
     void emitScan(QVector<QPoint> pts);
+};
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+class LAURPLidarServer : public LAUTCPSerialPortServer
+{
+    Q_OBJECT
+
+public:
+    explicit LAURPLidarServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0) : LAUTCPSerialPortServer(num , identifier, QString(LAURPLIDAR_SERVERIDSTRING), parent) { ; }
+
 };
 
 /****************************************************************************/

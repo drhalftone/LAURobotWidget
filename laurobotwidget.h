@@ -38,6 +38,7 @@
 #include "laupalettewidget.h"
 #include "lautcpserialportwidget.h"
 
+#define LAUROBOT_SERVERIDSTRING   "lautcprobotserver._tcp"
 #define LAUROBOT_WIDGETADDRESS                        128
 #define LAUROBOT_NULLMESSAGESENT                       -1
 #define LAUROBOT_DRIVEFORWARDMOTOR1                     0
@@ -103,7 +104,7 @@ class LAURobotObject : public LAUTCPSerialPortClient
 
 public:
     LAURobotObject(QString portString, QObject *parent) : LAUTCPSerialPortClient(portString, parent), firmwareString(QString("SERIAL DEMO")) { ; }
-    LAURobotObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent), firmwareString(QString("DEMO")) { ; }
+    LAURobotObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, QString(LAUROBOT_SERVERIDSTRING), parent), firmwareString(QString("DEMO")) { ; }
     ~LAURobotObject();
 
     QString firmware() const
@@ -136,6 +137,18 @@ private slots:
 signals:
     void emitError(QString string);
     void emitMessage(int message, void *argument = NULL);
+};
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+class LAURobotServer : public LAUTCPSerialPortServer
+{
+    Q_OBJECT
+
+public:
+    explicit LAURobotServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0) : LAUTCPSerialPortServer(num , identifier, QString(LAUROBOT_SERVERIDSTRING), parent) { ; }
+
 };
 
 /****************************************************************************/

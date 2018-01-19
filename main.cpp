@@ -41,7 +41,7 @@
 #include "laurobotwidget.h"
 #include "laurplidarwidget.h"
 #include "lauodomwidget.h"
-#include "laupolhumeswidget.h"
+//#include "laupolhumeswidget.h"
 #else
 #include <QCoreApplication>
 #endif
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
 #if defined(LAU_CLIENT)
 #if defined(LAU_SERVER)
-    LAUPolhemusDialog w(QString(), -1, NULL);
+    //LAUPolhemusDialog w(QString(), -1, NULL);
 #endif
 #else
     //LAUPolhemusDialog w((QString()));

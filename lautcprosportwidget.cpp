@@ -64,7 +64,7 @@ LAUTCPROSPort::LAUTCPROSPort(QString tpc, QString dType, int prtNmbr, QObject *p
     zeroConf = new QZeroConf();
     connect(zeroConf, SIGNAL(error(QZeroConf::error_t)), this, SLOT(onServiceError(QZeroConf::error_t)));
     connect(zeroConf, SIGNAL(servicePublished()), this, SLOT(onServicePublished()));
-    zeroConf->startServicePublish(topicString.toUtf8(), "_LAUTCPROSPortserver._tcp", "local", portNumber);
+    zeroConf->startServicePublish(topicString.toUtf8(), LAUTCPROSPORTSERVERIDSTRING, "local", portNumber);
 }
 
 /******************************************************************************/

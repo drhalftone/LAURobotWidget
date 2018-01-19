@@ -28,6 +28,7 @@
 #include <QSerialPortInfo>
 
 #include "lautcpserialportwidget.h"
+#include "lautcprosportwidget.h"
 
 /****************************************************************************/
 /****************************************************************************/
@@ -38,7 +39,7 @@ class LAUOdomObject : public LAUTCPSerialPortClient
 
 public:
     LAUOdomObject(QString portString, QObject *parent = 0) : LAUTCPSerialPortClient(portString, parent) { ; }
-    LAUOdomObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, parent) { ; }
+    LAUOdomObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, QString(LAUTCPROSPORTSERVERIDSTRING), parent) { ; }
     ~LAUOdomObject();
 
 public slots:

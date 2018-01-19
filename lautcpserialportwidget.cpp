@@ -27,17 +27,14 @@ LAUTCPSerialPortServer::LAUTCPSerialPortServer(int num, unsigned short identifie
     if (num < 100) {
         num = LAUTCPSERIALPORTSERVERPORTNUMER;
     }
-    if (idstring.length() < 1)
-    {
-        idstring = "_lautcpserialportserver._tcp";
-    }
+
     // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
     QList<QSerialPortInfo> portList = QSerialPortInfo::availablePorts();
     for (int m = 0; m < portList.count(); m++) {
         qDebug() << portList.at(m).portName();
         qDebug() << portList.at(m).productIdentifier();
         if (identifier == 0xFFFF || portList.at(m).productIdentifier() == identifier) {
-            ports << new LAUTCPSerialPort(portList.at(m).portName(), num + m);
+            ports << new LAUTCPSerialPort(portList.at(m).portName(), num + m, idstring);
         }
         for (int n = portList.count() - 1; n > m; n--) {
             if (portList.at(n).description() == portList.at(m).description() &&
@@ -80,11 +77,7 @@ LAUTCPSerialPort::LAUTCPSerialPort(QString string, int prtNmbr, QString idstring
     zeroConf = new QZeroConf();
     connect(zeroConf, SIGNAL(error(QZeroConf::error_t)), this, SLOT(onServiceError(QZeroConf::error_t)));
     connect(zeroConf, SIGNAL(servicePublished()), this, SLOT(onServicePublished()));
-    if (idstring.length() < 1)
-    {
-        idstring = "_lautcpserialportserver._tcp";
-    }
-    zeroConf->startServicePublish(portString.toUtf8(), idstring, "local", portNumber);
+    zeroConf->startServicePublish(portString.toUtf8(), idstring.toUtf8(), "local", portNumber);
 }
 
 /******************************************************************************/
@@ -289,11 +282,11 @@ LAUTCPSerialPortClient::LAUTCPSerialPortClient(QString portString, QObject *pare
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAUTCPSerialPortClient::LAUTCPSerialPortClient(QString ipAddr, int portNum, QObject *parent) : QObject(parent), ipAddress(ipAddr), portNumber(portNum), port(NULL)
+LAUTCPSerialPortClient::LAUTCPSerialPortClient(QString ipAddr, int portNum, QString idstring, QObject *parent) : QObject(parent), ipAddress(ipAddr), portNumber(portNum), port(NULL)
 {
     if (ipAddress.isEmpty()) {
         // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
-        LAUZeroConfClientDialog dialog(QString("_lautcpserialportserver._tcp"));
+        LAUZeroConfClientDialog dialog(idstring);
         if (dialog.exec()) {
             ipAddress = dialog.address();
             portNumber = dialog.port();
