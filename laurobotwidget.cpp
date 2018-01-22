@@ -660,6 +660,12 @@ void LAURobotObject::onSendMessage(int message, void *argument)
             write(appendCRC(byteArray, CRCSend));
             messageIDList.append(message);
         }
+        else if (message == LAUROBOT_READENCODERVALUES) {
+            byteArray.append((char)LAUROBOT_READENCODERVALUES);
+            qDebug() << "SENT: LAUROBOT_READENCODERVALUES";
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        }
         else if (message == LAUROBOT_SETPWMMODE) {
             byteArray.append((char)LAUROBOT_SETPWMMODE);
             byteArray.append((char)0x01);
@@ -1037,6 +1043,35 @@ bool LAURobotObject::processMessage()
                     emit emitMessage(message);
                 } else {
                     setError(QString("ERROR receiving LAUROBOT_READM1MAXIMUMCURRENT message!"));
+                    emit emitError(error());
+                }
+                messageArray = messageArray.remove(0, 10);
+                messageIDList.takeFirst();
+                return (true);
+            }
+            break;
+        }
+        case LAUROBOT_READENCODERVALUES: {
+            if (messageArray.length() >= 10) {
+                if (checkCRC(messageArray.left(10), CRCReceive)){
+                    int M1, M2;
+
+                    ((char*)&M1)[0] = (uint8_t)messageArray.at(3);
+                    ((char*)&M1)[1] = (uint8_t)messageArray.at(2);
+                    ((char*)&M1)[2] = (uint8_t)messageArray.at(1);
+                    ((char*)&M1)[3] = (uint8_t)messageArray.at(0);
+
+                    ((char*)&M2)[0] = (uint8_t)messageArray.at(7);
+                    ((char*)&M2)[1] = (uint8_t)messageArray.at(6);
+                    ((char*)&M2)[2] = (uint8_t)messageArray.at(5);
+                    ((char*)&M2)[3] = (uint8_t)messageArray.at(4);
+
+                    qDebug() << "LAUROBOT_READENCODERVALUES: ";
+                    qDebug() << "M1 Encoder Value: "  << M1 << " counts";
+                    qDebug() << "M2 Encoder Value: "  << M2 << " counts";
+                    emit emitMessage(message);
+                } else {
+                    setError(QString("ERROR receiving LAUROBOT_READENCODERVALUES message!"));
                     emit emitError(error());
                 }
                 messageArray = messageArray.remove(0, 10);
