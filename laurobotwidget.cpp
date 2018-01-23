@@ -136,6 +136,7 @@ void LAURobotWidget::onValueChanged(QPoint pos, int val)
         unsigned char uval = (unsigned char)((255 - val) / 2);
         //Switched to DRIVEMOTOR2 to match Palette and tread orientation -MM//
         emit emitMessage(LAUROBOT_DRIVEMOTOR2_7BIT, &uval);
+        emit emitMessage(LAUROBOT_READENCODERVALUES);
 //        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR2, &uval);
 
     }
@@ -144,6 +145,7 @@ void LAURobotWidget::onValueChanged(QPoint pos, int val)
         unsigned char uval = (unsigned char)((255-val) / 2);
         //Switched to DRIVEMOTOR1 to match Palette and tread orientation -MM//
         emit emitMessage(LAUROBOT_DRIVEMOTOR1_7BIT, &uval);
+        emit emitMessage(LAUROBOT_READENCODERVALUES);
 //        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR1, &uval);
     }
 }
@@ -156,7 +158,7 @@ void LAURobotWidget::onButtonPressed(QPoint pos)
     // DETERMINE IF SIGNAL IS FROM PUSH BUTTON
     if (pos == QPoint(0, 1)) {
 
-//        emit emitMessage(LAUROBOT_READSETTINGSFROMEEPROM);
+        emit emitMessage(LAUROBOT_READENCODERVALUES);
     }
 }
 
@@ -182,6 +184,8 @@ void LAURobotWidget::onButtonReleased(QPoint pos)
         emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
         emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
         qDebug() << "SENT: ALL STOP";
+        emit emitMessage(LAUROBOT_RESETENCODERVALUES);
+        emit emitMessage(LAUROBOT_READENCODERVALUES);
     }
 }
 
@@ -418,6 +422,12 @@ void LAURobotObject::onSendMessage(int message, void *argument)
         else if (message == LAUROBOT_READFIRMWAREVERSION) {
             byteArray.append((char)LAUROBOT_READFIRMWAREVERSION);
             qDebug() << "SENT: LAUROBOT_READFIRMWAREVERSION";
+            write(appendCRC(byteArray, CRCSend));
+            messageIDList.append(message);
+        }
+        else if (message == LAUROBOT_RESETENCODERVALUES) {
+            byteArray.append((char)LAUROBOT_RESETENCODERVALUES);
+            qDebug() << "SENT: LAUROBOT_RESETENCODERVALUES";
             write(appendCRC(byteArray, CRCSend));
             messageIDList.append(message);
         }
@@ -1068,7 +1078,7 @@ bool LAURobotObject::processMessage()
                     ((char*)&M2)[3] = (uint8_t)messageArray.at(4);
 
                     qDebug() << "LAUROBOT_READENCODERVALUES: ";
-                    qDebug() << "M1 Encoder Value: "  << M1 << " counts";
+                    qDebug() << "M1 Encoder Value: "  << -M1 << " counts";
                     qDebug() << "M2 Encoder Value: "  << M2 << " counts";
                     emit emitMessage(message);
                 } else {
@@ -1152,6 +1162,23 @@ bool LAURobotObject::processMessage()
                     emit emitMessage(message);
                 } else {
                     setError(QString("ERROR receiving LAUROBOT_RESTOREDEFAULTS message!"));
+                    emit emitError(error());
+                }
+                messageArray = messageArray.remove(0, 1);
+                messageIDList.takeFirst();
+                return (true);
+            }
+            break;
+        }
+        case LAUROBOT_RESETENCODERVALUES: {
+            if (messageArray.length() >= 1) {
+                if ((unsigned char)messageArray.at(0) == 0xff) {
+                    // REMOVE THE CRC FROM THE SENT MESSAGE SINCE WE AREN'T CHECKING IT HERE
+                    qDebug() << "Motor Encoders Reset";
+                    crcList.takeFirst();
+                    emit emitMessage(message);
+                } else {
+                    setError(QString("ERROR receiving LAUROBOT_RESETENCODERVALUES message!"));
                     emit emitError(error());
                 }
                 messageArray = messageArray.remove(0, 1);
