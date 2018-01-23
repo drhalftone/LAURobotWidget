@@ -44,7 +44,7 @@ class LAUTCPSerialPort : public QTcpServer
     Q_OBJECT
 
 public:
-    explicit LAUTCPSerialPort(QString string, int prtNmbr = LAUTCPSERIALPORTSERVERPORTNUMER, QString idstring = QString("lautcpserialportserver._tcp"), QObject *parent = 0);
+    explicit LAUTCPSerialPort(QString string, int prtNmbr = LAUTCPSERIALPORTSERVERPORTNUMER, QString idstring = QString("_lautcpserialportserver._tcp"), QObject *parent = 0);
     ~LAUTCPSerialPort();
 
     bool isConnected() const
@@ -94,7 +94,7 @@ class LAUTCPSerialPortServer : public QObject
     Q_OBJECT
 
 public:
-    explicit LAUTCPSerialPortServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QString idstring = QString("lautcpserialportserver._tcp"), QObject *parent = 0);
+    explicit LAUTCPSerialPortServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QString idstring = QString("_lautcpserialportserver._tcp"), QObject *parent = 0);
     ~LAUTCPSerialPortServer();
 
     int channels() const

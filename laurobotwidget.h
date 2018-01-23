@@ -20,6 +20,7 @@
 #ifndef LAUBUTTONWIDGET_H
 #define LAUBUTTONWIDGET_H
 
+#ifndef LAU_SERVER
 #include <QWidget>
 #include <QGroupBox>
 #include <QMessageBox>
@@ -28,6 +29,8 @@
 #include <QHBoxLayout>
 #include <QApplication>
 #include <QInputDialog>
+#include "laupalettewidget.h"
+#endif
 
 #include <QList>
 #include <QDebug>
@@ -35,10 +38,9 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 
-#include "laupalettewidget.h"
 #include "lautcpserialportwidget.h"
 
-#define LAUROBOT_SERVERIDSTRING   "lautcprobotserver._tcp"
+#define LAUROBOT_SERVERIDSTRING   "_lautcprobotserver._tcp"
 #define LAUROBOT_WIDGETADDRESS                        128
 #define LAUROBOT_NULLMESSAGESENT                       -1
 #define LAUROBOT_DRIVEFORWARDMOTOR1                     0
@@ -99,6 +101,18 @@
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
+class LAURobotServer : public LAUTCPSerialPortServer
+{
+    Q_OBJECT
+
+public:
+    explicit LAURobotServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0) : LAUTCPSerialPortServer(num , identifier, QString(LAUROBOT_SERVERIDSTRING), parent) { ; }
+
+};
+#ifndef LAU_SERVER
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
 class LAURobotObject : public LAUTCPSerialPortClient
 {
     Q_OBJECT
@@ -143,18 +157,6 @@ signals:
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-class LAURobotServer : public LAUTCPSerialPortServer
-{
-    Q_OBJECT
-
-public:
-    explicit LAURobotServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0) : LAUTCPSerialPortServer(num , identifier, QString(LAUROBOT_SERVERIDSTRING), parent) { ; }
-
-};
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
 class LAURobotWidget : public LAUPaletteWidget
 {
     Q_OBJECT
@@ -181,5 +183,5 @@ private:
 signals:
     void emitMessage(int message, void *argument = NULL);
 };
-
+#endif
 #endif // LAUBUTTONWIDGET_H

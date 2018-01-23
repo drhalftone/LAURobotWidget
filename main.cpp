@@ -38,13 +38,13 @@
 #include <QApplication>
 
 #include "laukeyencewidget.h"
-#include "laurobotwidget.h"
 #include "laurplidarwidget.h"
 #include "lauodomwidget.h"
 //#include "laupolhumeswidget.h"
 #else
 #include <QCoreApplication>
 #endif
+#include "laurobotwidget.h"
 
 #ifdef LAU_SERVER
 #include "lautcpserialportwidget.h"
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef LAU_SERVER
-    LAUTCPSerialPortServer s(-1, -1);
+    LAURobotServer s(-1, 9220);
 #endif
 
 #if defined(LAU_CLIENT)
