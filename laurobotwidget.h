@@ -38,7 +38,7 @@
 #include "laupalettewidget.h"
 #include "lautcpserialportwidget.h"
 
-#define LAUROBOT_SERVERIDSTRING   "lautcprobotserver._tcp"
+#define LAUROBOT_SERVERIDSTRING   "_lautcprobotserver._tcp"
 #define LAUROBOT_WIDGETADDRESS                        128
 #define LAUROBOT_NULLMESSAGESENT                       -1
 #define LAUROBOT_DRIVEFORWARDMOTOR1                     0

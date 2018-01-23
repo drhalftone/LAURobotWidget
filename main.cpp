@@ -78,14 +78,6 @@ int main(int argc, char *argv[])
     LAUTCPSerialPortServer s(-1, -1);
 #endif
 
-#if defined(LAU_CLIENT)
-#if defined(LAU_SERVER)
-    //LAUPolhemusDialog w(QString(), -1, NULL);
-#endif
-#else
-    //LAUPolhemusDialog w((QString()));
-#endif
-
 #ifdef LAU_CLIENT
     LAURobotWidget w(QString(), -1, (QWidget*)NULL);
     w.show();
