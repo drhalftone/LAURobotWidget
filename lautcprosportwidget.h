@@ -40,7 +40,7 @@
 #endif
 
 #define LAUTCPROSPORTSERVERPORTNUMER  11444
-#define LAUTCPROSPORTSERVERIDSTRING "_LAUTCPROSPortserver._tcp"
+#define LAUTCPROSPORTSERVERIDSTRING "_lautcprosportserver._tcp"
 
 /****************************************************************************/
 /****************************************************************************/

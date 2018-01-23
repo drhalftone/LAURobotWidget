@@ -29,7 +29,7 @@
 
 #include "lautcpserialportwidget.h"
 
-#define LAURPLIDAR_SERVERIDSTRING   "lautcprplidarserver._tcp"
+#define LAURPLIDAR_SERVERIDSTRING   "_lautcprplidarserver._tcp"
 #define LAURPLIDAR_FIXED_BYTE     0xA5
 #define LAURPLIDAR_STOP           0x25
 #define LAURPLIDAR_RESET          0x40
