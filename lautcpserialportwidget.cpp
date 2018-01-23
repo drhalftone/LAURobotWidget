@@ -286,7 +286,7 @@ LAUTCPSerialPortClient::LAUTCPSerialPortClient(QString ipAddr, int portNum, QStr
 {
     if (ipAddress.isEmpty()) {
         // GET A LIST OF ALL POSSIBLE SERIAL PORTS CURRENTLY AVAILABLE
-        LAUZeroConfClientDialog dialog(idstring);
+        LAUZeroConfClientDialog dialog("_lautcprobotserver._tcp");
         if (dialog.exec()) {
             ipAddress = dialog.address();
             portNumber = dialog.port();

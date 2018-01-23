@@ -118,8 +118,8 @@ class LAURobotObject : public LAUTCPSerialPortClient
     Q_OBJECT
 
 public:
-    LAURobotObject(QString portString, QObject *parent) : LAUTCPSerialPortClient(portString, parent), firmwareString(QString("SERIAL DEMO")) { ; }
-    LAURobotObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, QString(LAUROBOT_SERVERIDSTRING), parent), firmwareString(QString("DEMO")) { ; }
+    LAURobotObject(QString portString, QObject *parent) : LAUTCPSerialPortClient(portString, parent), firmwareString(QString("DEMO")) { ; }
+    LAURobotObject(QString ipAddr, int portNum, QObject *parent = 0) : LAUTCPSerialPortClient(ipAddr, portNum, QString(LAUROBOT_SERVERIDSTRING), parent), firmwareString(QString("Connected RoboClaw")) { ; }
     ~LAURobotObject();
 
     QString firmware() const
