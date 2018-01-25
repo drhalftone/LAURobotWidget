@@ -32,6 +32,7 @@
 #include "laupalettewidget.h"
 #endif
 
+#include <QTime>
 #include <QList>
 #include <QDebug>
 #include <QThread>
@@ -180,6 +181,7 @@ public slots:
 
 private:
     LAURobotObject *robot;
+    void timerEvent(QTimerEvent *event);
 
 signals:
     void emitMessage(int message, void *argument = NULL);

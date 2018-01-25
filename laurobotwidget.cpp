@@ -52,6 +52,12 @@ LAURobotWidget::LAURobotWidget(QString ipAddr, int portNum, QWidget *parent) : L
     if (robot->connectPort()) {
         this->setWindowTitle(robot->firmware());
     }
+
+/* ADD ENCODER TIMER */
+
+    startTimer(1000);
+
+/* END ENCODER TIMER ADD */
 }
 
 /****************************************************************************/
@@ -95,6 +101,7 @@ LAURobotWidget::LAURobotWidget(QString portString, QWidget *parent) : LAUPalette
 LAURobotWidget::~LAURobotWidget()
 {
     if (robot) {
+        // Should we add a killTimer() here?
         delete robot;
     }
 }
@@ -126,6 +133,14 @@ LAURobotWidget::~LAURobotWidget()
  *
  */
 
+// ADD ENCODER TIMER
+void LAURobotWidget::timerEvent(QTimerEvent *event)
+{
+    qDebug() << "Timer ID:" << event->timerId();
+    emit emitMessage(LAUROBOT_READENCODERVALUES);
+}
+// END ENCODER TIMER ADD
+
 
 void LAURobotWidget::onValueChanged(QPoint pos, int val)
 {
@@ -136,17 +151,12 @@ void LAURobotWidget::onValueChanged(QPoint pos, int val)
         unsigned char uval = (unsigned char)((255 - val) / 2);
         //Switched to DRIVEMOTOR2 to match Palette and tread orientation -MM//
         emit emitMessage(LAUROBOT_DRIVEMOTOR2_7BIT, &uval);
-        emit emitMessage(LAUROBOT_READENCODERVALUES);
-//        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR2, &uval);
-
     }
     // LEFT SLIDER
     else if (pos == QPoint(-1, 0)) {
         unsigned char uval = (unsigned char)((255-val) / 2);
         //Switched to DRIVEMOTOR1 to match Palette and tread orientation -MM//
         emit emitMessage(LAUROBOT_DRIVEMOTOR1_7BIT, &uval);
-        emit emitMessage(LAUROBOT_READENCODERVALUES);
-//        emit emitMessage(LAUROBOT_DRIVEBACKWARDSMOTOR1, &uval);
     }
 }
 
@@ -158,7 +168,6 @@ void LAURobotWidget::onButtonPressed(QPoint pos)
     // DETERMINE IF SIGNAL IS FROM PUSH BUTTON
     if (pos == QPoint(0, 1)) {
 
-        emit emitMessage(LAUROBOT_READENCODERVALUES);
     }
 }
 
@@ -177,15 +186,14 @@ void LAURobotWidget::onButtonReleased(QPoint pos)
     if (pos == QPoint(0, 1)) {
         //Setting the motor value to 0 so that the motors will stop.//
 
-//        emit emitMessage(LAUROBOT_RESTOREDEFAULTS);
-
-
         unsigned char val = 0;
         emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR1, &val);
         emit emitMessage(LAUROBOT_DRIVEFORWARDMOTOR2, &val);
         qDebug() << "SENT: ALL STOP";
+        emit emitMessage(LAUROBOT_READENCODERVALUES);
         emit emitMessage(LAUROBOT_RESETENCODERVALUES);
         emit emitMessage(LAUROBOT_READENCODERVALUES);
+
     }
 }
 
