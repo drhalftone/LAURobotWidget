@@ -83,7 +83,7 @@ unix:macx {
     QMAKE_CXXFLAGS += -msse2 -msse3 -mssse3 -msse4.1
     INCLUDEPATH    += /usr/local/include /usr/local/include/eigen3
     DEPENDPATH     += /usr/local/include /usr/local/include/eigen3
-    LIBS           += /usr/local/lib/libtiff.dylib
+    LIBS           += /usr/local/lib/libtiff.dylib /usr/local/lib/libQtZeroConf.dylib
 }
 
 unix:!macx {

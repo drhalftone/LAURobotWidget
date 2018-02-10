@@ -49,9 +49,9 @@ LAUZeroConfClientWidget::LAUZeroConfClientWidget(QString service, QWidget *paren
 
     // MAKE CONNECTIONS BETWEEN THIS OBJECT AND THE BONJOUR SERVICE OBJECT
     zeroConf = new QZeroConf();
-    connect(zeroConf, SIGNAL(serviceAdded(QZeroConfService)), this, SLOT(onAddService(QZeroConfService)));
-    connect(zeroConf, SIGNAL(serviceRemoved(QZeroConfService)), this, SLOT(onRemoveService(QZeroConfService)));
-    connect(zeroConf, SIGNAL(serviceUpdated(QZeroConfService)), this, SLOT(onUpdateService(QZeroConfService)));
+    connect(zeroConf, SIGNAL(serviceAdded(QZeroConfService *)), this, SLOT(onAddService(QZeroConfService *)));
+    connect(zeroConf, SIGNAL(serviceRemoved(QZeroConfService *)), this, SLOT(onRemoveService(QZeroConfService *)));
+    connect(zeroConf, SIGNAL(serviceUpdated(QZeroConfService *)), this, SLOT(onUpdateService(QZeroConfService *)));
     connect(zeroConf, SIGNAL(error(QZeroConf::error_t)), this, SLOT(onServiceError(QZeroConf::error_t)));
     zeroConf->startBrowser(serviceString, QAbstractSocket::IPv4Protocol);
 }
@@ -89,23 +89,23 @@ void LAUZeroConfClientWidget::onServiceError(QZeroConf::error_t error)
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-void LAUZeroConfClientWidget::onAddService(QZeroConfService item)
+void LAUZeroConfClientWidget::onAddService(QZeroConfService *item)
 {
-    tcpAddressComboBox->addItem(QString("%1::%2").arg(item.name()).arg(item.port()), item.ip().toString());
+    tcpAddressComboBox->addItem(QString("%1::%2").arg(item->name).arg(item->port), item->ip.toString());
 }
 
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-void LAUZeroConfClientWidget::onRemoveService(QZeroConfService item)
+void LAUZeroConfClientWidget::onRemoveService(QZeroConfService *item)
 {
-    tcpAddressComboBox->removeItem(tcpAddressComboBox->findText(QString("%1::%2").arg(item.name()).arg(item.port())));
+    tcpAddressComboBox->removeItem(tcpAddressComboBox->findText(QString("%1::%2").arg(item->name).arg(item->port)));
 }
 
 /******************************************************************************/
 /******************************************************************************/
 /******************************************************************************/
-void LAUZeroConfClientWidget::onUpdateService(QZeroConfService)
+void LAUZeroConfClientWidget::onUpdateService(QZeroConfService *)
 {
     qDebug() << "LAUZeroConfClientWidget :: Update service!";
 }

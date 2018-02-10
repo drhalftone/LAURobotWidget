@@ -31,6 +31,7 @@
 #include <QDialogButtonBox>
 
 #include <QObject>
+#include <QString>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QSerialPort>
@@ -70,9 +71,9 @@ private:
 
 private slots:
     void onServiceError(QZeroConf::error_t error);
-    void onRemoveService(QZeroConfService item);
-    void onUpdateService(QZeroConfService);
-    void onAddService(QZeroConfService item);
+    void onRemoveService(QZeroConfService *item);
+    void onUpdateService(QZeroConfService *);
+    void onAddService(QZeroConfService *item);
 
 signals:
     void emitValidAddress(bool state);

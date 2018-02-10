@@ -25,7 +25,6 @@ LAUPaletteWidget::LAUPaletteWidget(QString string, QList<LAUPalette::Packet> lis
     connect(palette, SIGNAL(emitDialRotated(QPoint, int)), this, SLOT(onDialRotated(QPoint, int)));
     connect(palette, SIGNAL(emitButtonPressed(QPoint)), this, SLOT(onButtonPressed(QPoint)));
     connect(palette, SIGNAL(emitButtonReleased(QPoint)), this, SLOT(onButtonReleased(QPoint)));
-    connect(palette, SIGNAL(emitError(QString)), this, SLOT(onError(QString)));
 
     connect(palette, SIGNAL(emitUpdate()), label, SLOT(update()));
     label->setPalette(palette);

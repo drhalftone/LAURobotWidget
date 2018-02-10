@@ -108,9 +108,10 @@ class LAURobotServer : public LAUTCPSerialPortServer
     Q_OBJECT
 
 public:
-    explicit LAURobotServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0) : LAUTCPSerialPortServer(num , identifier, QString(LAUROBOT_SERVERIDSTRING), parent) { ; }
+    explicit LAURobotServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0) : LAUTCPSerialPortServer(num, identifier, QString(LAUROBOT_SERVERIDSTRING), parent) { ; }
 
 };
+
 #ifndef LAU_SERVER
 /****************************************************************************/
 /****************************************************************************/
