@@ -111,6 +111,7 @@ private slots:
 
 signals:
     void emitError(QString string);
+    void emitPoint(QPoint pt);
     void emitScan(QVector<QPoint> pts);
 };
 
@@ -179,7 +180,9 @@ protected:
 
 private:
     LAURPLidarObject *object;
+    LAURPLidarObject *robot;
     LAURPLidarLabel *label;
+    LAURPLidarLabel *robolabel;
 };
 
 /****************************************************************************/

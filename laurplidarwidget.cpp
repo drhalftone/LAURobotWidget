@@ -23,11 +23,18 @@ LAURPLidarWidget::LAURPLidarWidget(QString portString, QWidget *parent) : QWidge
     label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->layout()->addWidget(label);
 
+    robolabel = new LAURPLidarLabel();
+    robolabel->setMinimumHeight(200);
+    robolabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    this->layout()->addWidget(robolabel);
+
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
     object = new LAURPLidarObject(portString);
+    robot = new LAURPLidarObject(QString());
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
+//        connect(robot, SIGNAL(emitPoint(pt)), robolabel, SLOT(onAddPoints(QPoint)), Qt::DirectConnection );
         connect(object, SIGNAL(emitScan(QVector<QPoint>)), label, SLOT(onAddPoints(QVector<QPoint>)), Qt::DirectConnection);
     }
 }
@@ -49,12 +56,20 @@ LAURPLidarWidget::LAURPLidarWidget(QString ipAddr, int portNum, QWidget *parent)
     label->onEnableSavePoints(true);
     this->layout()->addWidget(label);
 
+    robolabel = new LAURPLidarLabel();
+    robolabel->setMinimumHeight(200);
+    robolabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    robolabel->onEnableSavePoints(true);
+    this->layout()->addWidget(robolabel);
+
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
     object = new LAURPLidarObject(ipAddr, portNum);
+    robot  = new LAURPLidarObject(ipAddr, portNum);
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
         connect(object, SIGNAL(emitScan(QVector<QPoint>)), label, SLOT(onAddPoints(QVector<QPoint>)), Qt::DirectConnection);
+        connect(robot, SIGNAL(emitPoint(pt)), robolabel, SLOT(onAddPoints(QPoint)), Qt::DirectConnection );
     }
 }
 
@@ -157,7 +172,8 @@ void LAURPLidarLabel::onAddPoint(QPoint pt)
         points.append(pt);
 
         // UPDATE THE LABEL ON SCREEN FOR THE USER
-        if (points.count() % 100 == 0) {
+//        if (points.count() % 100 == 0) {
+        if (points.count() % 1 == 0) {
             //qDebug() << "Number of points:" << points.count();
             update();
         }
@@ -228,6 +244,7 @@ void LAURPLidarLabel::paintEvent(QPaintEvent *)
     painter.setBrush(Qt::white);
     painter.drawRect(0, 0, this->width(), this->height());
 
+//    if (points.count() > 100) {
     if (points.count() > 100) {
         // CALCULATE SCALE FACTOR TO MAINTAIN 1:1 ASPECT RATIO
         float xScale = (float)this->width() / (float)(bottomRight.x() - topLeft.x());

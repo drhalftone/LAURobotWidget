@@ -29,6 +29,12 @@
 #include <QHBoxLayout>
 #include <QApplication>
 #include <QInputDialog>
+
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QPointF>
+#include <QVector>
+
 #include "laupalettewidget.h"
 #endif
 
@@ -146,6 +152,11 @@ private:
 
     bool processMessage();
 
+    QVector<QPointF> points;
+    bool view_has_run;
+    void addPoints(float p1, float p2);
+    void encoderWidget(QVector<QPointF> points);
+
 private slots:
     void onTcpError(QAbstractSocket::SocketError error);
 
@@ -154,6 +165,7 @@ private slots:
 
 signals:
     void emitError(QString string);
+    void emitPoint(QPoint pt);
     void emitMessage(int message, void *argument = NULL);
 };
 
@@ -183,6 +195,11 @@ public slots:
 private:
     LAURobotObject *robot;
     void timerEvent(QTimerEvent *event);
+
+//    QVector<QPointF> points;
+//    bool view_has_run;
+//    void addPoints(float p1, float p2);
+//    void encoderWidget(QVector<QPointF> points);
 
 signals:
     void emitMessage(int message, void *argument = NULL);

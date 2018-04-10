@@ -80,7 +80,9 @@ int main(int argc, char *argv[])
 
 #ifdef LAU_CLIENT
     LAURobotWidget w(QString(), -1, (QWidget*)NULL);
+    LAURPLidarWidget e(QString(), (QWidget*)NULL);
     w.show();
+    e.show();
     return a.exec();
 #else
     return (a.exec());

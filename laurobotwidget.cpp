@@ -133,15 +133,19 @@ LAURobotWidget::~LAURobotWidget()
  *
  */
 
-// ADD ENCODER TIMER
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
 void LAURobotWidget::timerEvent(QTimerEvent *event)
 {
     qDebug() << "Timer ID:" << event->timerId();
     emit emitMessage(LAUROBOT_READENCODERVALUES);
 }
-// END ENCODER TIMER ADD
 
 
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
 void LAURobotWidget::onValueChanged(QPoint pos, int val)
 {
     // DETERMINE IF INCOMING SIGNAL IS FROM LEFT OR RIGHT SLIDER
@@ -333,6 +337,25 @@ void LAURobotObject::onTcpError(QAbstractSocket::SocketError error)
             break;
     }
 }
+
+
+///****************************************************************************/
+///****************************************************************************/
+///****************************************************************************/
+//void LAURobotObject::paintEvents(float p1, float p2)
+//{
+//    QVector<QPointF> points;
+//    points.append(QPointF(p1, p2));
+
+//    QGraphicsView * view = new QGraphicsView();
+//    QGraphicsScene * scene = new QGraphicsScene();
+//    view->setScene(scene);
+
+//    for(int i = 0; i< points.size(); i++)
+//        scene->addEllipse(points[i].x(), points[i].y(), 1, 1);
+
+//    view->show();
+//}
 
 /****************************************************************************/
 /****************************************************************************/
@@ -1073,6 +1096,7 @@ bool LAURobotObject::processMessage()
         case LAUROBOT_READENCODERVALUES: {
             if (messageArray.length() >= 10) {
                 if (checkCRC(messageArray.left(10), CRCReceive)){
+
                     int M1, M2;
 
                     ((char*)&M1)[0] = (uint8_t)messageArray.at(3);
@@ -1087,7 +1111,10 @@ bool LAURobotObject::processMessage()
 
                     qDebug() << "LAUROBOT_READENCODERVALUES: ";
                     qDebug() << "M1 Encoder Value: "  << -M1 << " counts";
-                    qDebug() << "M2 Encoder Value: "  << M2 << " counts";
+                    qDebug() << "M2 Encoder Value: "  << -M2 << " counts";
+
+                    emit emitPoint(QPoint(-M1, -M2));
+
                     emit emitMessage(message);
                 } else {
                     setError(QString("ERROR receiving LAUROBOT_READENCODERVALUES message!"));
