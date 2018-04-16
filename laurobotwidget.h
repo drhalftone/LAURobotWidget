@@ -35,6 +35,7 @@
 #include <QPointF>
 #include <QVector>
 
+#include "laurplidarwidget.h"
 #include "laupalettewidget.h"
 #endif
 
@@ -187,6 +188,7 @@ protected:
 public slots:
     void onTCPError(QString string);
     void onReceiveMessage(int message, void *argument = NULL);
+    void onRequestEncoder();
 
     void onValueChanged(QPoint pos, int val);
     void onButtonPressed(QPoint pos);
@@ -194,15 +196,11 @@ public slots:
 
 private:
     LAURobotObject *robot;
-    void timerEvent(QTimerEvent *event);
-
-//    QVector<QPointF> points;
-//    bool view_has_run;
-//    void addPoints(float p1, float p2);
-//    void encoderWidget(QVector<QPointF> points);
+    LAURPLidarLabel *plotWidget;
 
 signals:
     void emitMessage(int message, void *argument = NULL);
+    void emitPoint(QPoint pt);
 };
 #endif
 #endif // LAUBUTTONWIDGET_H

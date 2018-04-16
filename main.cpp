@@ -79,10 +79,11 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef LAU_CLIENT
+    // Serial Port setup
+//    LAURobotWidget w(QString(), (QWidget*)NULL);
+    // TCP Serial Remote setup
     LAURobotWidget w(QString(), -1, (QWidget*)NULL);
-    LAURPLidarWidget e(QString(), (QWidget*)NULL);
     w.show();
-    e.show();
     return a.exec();
 #else
     return (a.exec());

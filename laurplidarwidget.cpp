@@ -34,7 +34,7 @@ LAURPLidarWidget::LAURPLidarWidget(QString portString, QWidget *parent) : QWidge
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
-//        connect(robot, SIGNAL(emitPoint(pt)), robolabel, SLOT(onAddPoints(QPoint)), Qt::DirectConnection );
+        connect(robot, SIGNAL(emitPoint(pt)), robolabel, SLOT(onAddPoint(QPoint)), Qt::DirectConnection );
         connect(object, SIGNAL(emitScan(QVector<QPoint>)), label, SLOT(onAddPoints(QVector<QPoint>)), Qt::DirectConnection);
     }
 }
@@ -69,7 +69,7 @@ LAURPLidarWidget::LAURPLidarWidget(QString ipAddr, int portNum, QWidget *parent)
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
         connect(object, SIGNAL(emitScan(QVector<QPoint>)), label, SLOT(onAddPoints(QVector<QPoint>)), Qt::DirectConnection);
-        connect(robot, SIGNAL(emitPoint(pt)), robolabel, SLOT(onAddPoints(QPoint)), Qt::DirectConnection );
+        connect(robot, SIGNAL(emitPoint(QPoint pt)), robolabel, SLOT(onAddPoint(QPoint pt)), Qt::DirectConnection );
     }
 }
 
@@ -172,9 +172,7 @@ void LAURPLidarLabel::onAddPoint(QPoint pt)
         points.append(pt);
 
         // UPDATE THE LABEL ON SCREEN FOR THE USER
-//        if (points.count() % 100 == 0) {
-        if (points.count() % 1 == 0) {
-            //qDebug() << "Number of points:" << points.count();
+        if (points.count() % 10 == 0) {
             update();
         }
     }
@@ -244,30 +242,27 @@ void LAURPLidarLabel::paintEvent(QPaintEvent *)
     painter.setBrush(Qt::white);
     painter.drawRect(0, 0, this->width(), this->height());
 
-//    if (points.count() > 100) {
-    if (points.count() > 100) {
-        // CALCULATE SCALE FACTOR TO MAINTAIN 1:1 ASPECT RATIO
-        float xScale = (float)this->width() / (float)(bottomRight.x() - topLeft.x());
-        float yScale = (float)this->height() / (float)(bottomRight.y() - topLeft.y());
+    // CALCULATE SCALE FACTOR TO MAINTAIN 1:1 ASPECT RATIO
+    float xScale = (float)this->width() / (float)(bottomRight.x() - topLeft.x());
+    float yScale = (float)this->height() / (float)(bottomRight.y() - topLeft.y());
 
-        // SET A TRANSFORM TO KEEP ALL THE POINTS IN THE FIELD OF VIEW OF THE LABEL
-        QTransform transformA, transformB, transformC;
-        transformA.translate(-(topLeft.x() + bottomRight.x()) / 2, -(topLeft.y() + bottomRight.y()) / 2);
-        if (xScale < yScale) {
-            transformB.scale(xScale, xScale);
-        } else {
-            transformB.scale(yScale, yScale);
-        }
-        transformC.translate(this->width() / 2.0, this->height() / 2.0);
-        painter.setTransform(transformA * transformB * transformC);
+    // SET A TRANSFORM TO KEEP ALL THE POINTS IN THE FIELD OF VIEW OF THE LABEL
+    QTransform transformA, transformB, transformC;
+    transformA.translate(-(topLeft.x() + bottomRight.x()) / 2, -(topLeft.y() + bottomRight.y()) / 2);
+    if (xScale < yScale) {
+        transformB.scale(xScale, xScale);
+    } else {
+        transformB.scale(yScale, yScale);
+    }
+    transformC.translate(this->width() / 2.0, this->height() / 2.0);
+    painter.setTransform(transformA * transformB * transformC);
 
-        // DRAW OUR LIST OF POINTS
-        QPen pen(Qt::red, 1.0f, Qt::SolidLine);
-        pen.setCosmetic(true);
-        painter.setPen(pen);
-        for (int n = 1; n < points.count() && n < 10000; n++) {
-            painter.drawPoint(points.at(points.count() - n));
-        }
+    // DRAW OUR LIST OF POINTS
+    QPen pen(Qt::red, 1.0f, Qt::SolidLine);
+    pen.setCosmetic(true);
+    painter.setPen(pen);
+    for (int n = 1; n < points.count() && n < 10000; n++) {
+        painter.drawPoint(points.at(points.count() - n));
     }
 
     // END DRAWING

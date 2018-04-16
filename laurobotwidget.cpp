@@ -22,7 +22,7 @@
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAURobotWidget::LAURobotWidget(QString ipAddr, int portNum, QWidget *parent) : LAUPaletteWidget(QString("RoboClaw"), QList<LAUPalette::Packet>(), parent), robot(NULL)
+LAURobotWidget::LAURobotWidget(QString ipAddr, int portNum, QWidget *parent) : LAUPaletteWidget(QString("RoboClaw"), QList<LAUPalette::Packet>(), parent), robot(NULL), plotWidget(NULL)
 {
     // SET THE WINDOWS LAYOUT
     this->setWindowTitle("LAURobotWidget");
@@ -48,22 +48,26 @@ LAURobotWidget::LAURobotWidget(QString ipAddr, int portNum, QWidget *parent) : L
     connect(robot, SIGNAL(emitMessage(int, void *)), this, SLOT(onReceiveMessage(int, void *)));
     connect(robot, SIGNAL(emitError(QString)), this, SLOT(onTCPError(QString)));
 
+    // CREATE A WIDGE TO DISPLAY ENCODER DATA
+    plotWidget = new LAURPLidarLabel();
+    connect(robot, SIGNAL(emitPoint(QPoint)), plotWidget, SLOT(onAddPoint(QPoint)));
+
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (robot->connectPort()) {
         this->setWindowTitle(robot->firmware());
+
+        // DISPLAY THE PLOT WIDGET
+        plotWidget->show();
+
+        // LET'S START THE BALL ROLLING BY ASKING FOR THE CURRENT ENCODER VALUES
+        onRequestEncoder();
     }
-
-/* ADD ENCODER TIMER */
-
-    startTimer(1000);
-
-/* END ENCODER TIMER ADD */
 }
 
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-LAURobotWidget::LAURobotWidget(QString portString, QWidget *parent) : LAUPaletteWidget(QString("RoboClaw"), QList<LAUPalette::Packet>(), parent), robot(NULL)
+LAURobotWidget::LAURobotWidget(QString portString, QWidget *parent) : LAUPaletteWidget(QString("RoboClaw"), QList<LAUPalette::Packet>(), parent), robot(NULL), plotWidget(NULL)
 {
     // SET THE WINDOWS LAYOUT
     this->setWindowTitle("LAURobotWidget");
@@ -89,9 +93,20 @@ LAURobotWidget::LAURobotWidget(QString portString, QWidget *parent) : LAUPalette
     connect(robot, SIGNAL(emitMessage(int, void *)), this, SLOT(onReceiveMessage(int, void *)));
     connect(robot, SIGNAL(emitError(QString)), this, SLOT(onTCPError(QString)));
 
+    // CREATE A WIDGE TO DISPLAY ENCODER DATA
+    plotWidget = new LAURPLidarLabel();
+    plotWidget->setMinimumSize(480,480);
+    connect(robot, SIGNAL(emitPoint(QPoint)), plotWidget, SLOT(onAddPoint(QPoint)));
+
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (robot->connectPort()) {
         this->setWindowTitle(robot->firmware());
+
+        // DISPLAY THE PLOT WIDGET
+        plotWidget->show();
+
+        // LET'S START THE BALL ROLLING BY ASKING FOR THE CURRENT ENCODER VALUES
+        onRequestEncoder();
     }
 }
 
@@ -101,7 +116,6 @@ LAURobotWidget::LAURobotWidget(QString portString, QWidget *parent) : LAUPalette
 LAURobotWidget::~LAURobotWidget()
 {
     if (robot) {
-        // Should we add a killTimer() here?
         delete robot;
     }
 }
@@ -109,39 +123,10 @@ LAURobotWidget::~LAURobotWidget()
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
-
-// THIS FUNCTION DRIVES THE MOTORS BASED ON SIGNAL FOR LEFT AND RIGHT SLIDERS -MM//
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-
-
-/* NOTES: -MM
- *
- * Pairing
- *  for LAUROBOT_DRIVEMOTOR2_7BIT
- *      unsigned char uval = (unsigned char)((255 - val) / 2);
- * with
- *  for LAUROBOT_DRIVEMOTOR1_7BIT
- *      unsigned char uval = (unsigned char)((val) / 2);
- * will cause treads to move in opposite directions.
- *
- * MUST  use one or the other to get them to go in the same direction.
- *
- * USE   unsigned char uval = (unsigned char)((255 - val) / 2); for going forward in same direction.
- *
- */
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-void LAURobotWidget::timerEvent(QTimerEvent *event)
+void LAURobotWidget::onRequestEncoder()
 {
-    qDebug() << "Timer ID:" << event->timerId();
     emit emitMessage(LAUROBOT_READENCODERVALUES);
 }
-
 
 /****************************************************************************/
 /****************************************************************************/
@@ -214,8 +199,12 @@ void LAURobotWidget::onTCPError(QString string)
 /****************************************************************************/
 void LAURobotWidget::onReceiveMessage(int message, void *argument)
 {
-    Q_UNUSED(message);
     Q_UNUSED(argument);
+
+    // WE RECEIVED AN ENCODER VALUE, SO LET'S ASK AGAIN AFTER A 100 MILLISECOND DELAY
+    if (message == LAUROBOT_READENCODERVALUES){
+        QTimer::singleShot(100, this, SLOT(onRequestEncoder()));
+    }
 }
 
 /****************************************************************************/
@@ -337,25 +326,6 @@ void LAURobotObject::onTcpError(QAbstractSocket::SocketError error)
             break;
     }
 }
-
-
-///****************************************************************************/
-///****************************************************************************/
-///****************************************************************************/
-//void LAURobotObject::paintEvents(float p1, float p2)
-//{
-//    QVector<QPointF> points;
-//    points.append(QPointF(p1, p2));
-
-//    QGraphicsView * view = new QGraphicsView();
-//    QGraphicsScene * scene = new QGraphicsScene();
-//    view->setScene(scene);
-
-//    for(int i = 0; i< points.size(); i++)
-//        scene->addEllipse(points[i].x(), points[i].y(), 1, 1);
-
-//    view->show();
-//}
 
 /****************************************************************************/
 /****************************************************************************/
@@ -1114,7 +1084,6 @@ bool LAURobotObject::processMessage()
                     qDebug() << "M2 Encoder Value: "  << -M2 << " counts";
 
                     emit emitPoint(QPoint(-M1, -M2));
-
                     emit emitMessage(message);
                 } else {
                     setError(QString("ERROR receiving LAUROBOT_READENCODERVALUES message!"));

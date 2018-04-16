@@ -197,7 +197,7 @@ public:
     {
         this->setLayout(new QVBoxLayout());
         this->layout()->setContentsMargins(6, 6, 6, 6);
-        this->setWindowTitle(QString("LAURPLidar Dialog"));
+        this->setWindowTitle(QString("ENCODER LAURPLidar Dialog"));
 
         widget = new LAURPLidarWidget(portString);
         this->layout()->addWidget(widget);
