@@ -1,5 +1,6 @@
 #include "laurplidarwidget.h"
 
+#ifndef LAU_SERVER
 const char LAURPLIDAR_RESET_HEADER[7] = { (char)0x52, (char)0x50, (char)0x20, (char)0x4C, (char)0x49, (char)0x44, (char)0x41 };
 const char LAURPLIDAR_SCAN_HEADER[7] = { (char)0xA5, (char)0x5A, (char)0x05, (char)0x00, (char)0x00, (char)0x40, (char)0x81 };
 const char LAURPLIDAR_EXPRESS_HEADER[7] = { (char)0xA5, (char)0x5A, (char)0x54, (char)0x00, (char)0x00, (char)0x40, (char)0x82 };
@@ -688,3 +689,4 @@ int LAURPLidarObject::decodeMessageHeader(QByteArray byteArray)
         return (-1);
     }
 }
+#endif

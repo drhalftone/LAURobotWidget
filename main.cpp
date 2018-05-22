@@ -45,6 +45,7 @@
 #include <QCoreApplication>
 #endif
 #include "laurobotwidget.h"
+#include "laurplidarwidget.h"
 
 #ifdef LAU_SERVER
 #include "lautcpserialportwidget.h"
@@ -76,6 +77,7 @@ int main(int argc, char *argv[])
 
 #ifdef LAU_SERVER
     LAURobotServer s(-1, 9220);
+    LAURPLidarServer l(-1, 60000);
 #endif
 
 #ifdef LAU_CLIENT

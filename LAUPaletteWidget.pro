@@ -16,8 +16,8 @@
 #    along with LAURobotWidget.  If not, see <http://www.gnu.org/licenses/>.
 #
 #**************************************************************************************************/
-CONFIG  -= server
-CONFIG  += client
+CONFIG  += server
+CONFIG  -= client
 CONFIG  -= ros
 
 QT      += core serialport network

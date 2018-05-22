@@ -1,9 +1,9 @@
 #ifndef LAURPLIDARWIDGET_H
 #define LAURPLIDARWIDGET_H
 
+#ifndef LAU_SERVER
 #include <QMenu>
 #include <QWidget>
-#include <QString>
 #include <QGroupBox>
 #include <QMessageBox>
 #include <QPushButton>
@@ -12,8 +12,9 @@
 #include <QFileDialog>
 #include <QApplication>
 #include <QInputDialog>
-#include <QMouseEvent>
+#endif
 
+#include <QString>
 #include <QTime>
 #include <QList>
 #include <QtCore>
@@ -26,6 +27,7 @@
 #include <QSerialPort>
 #include <QStandardPaths>
 #include <QSerialPortInfo>
+#include <QMouseEvent>
 
 #include "lautcpserialportwidget.h"
 
@@ -40,6 +42,18 @@
 #define LAURPLIDAR_GET_HEALTH     0x52
 #define LAURPLIDAR_GET_SAMPLERATE 0x59
 
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+class LAURPLidarServer : public LAUTCPSerialPortServer
+{
+    Q_OBJECT
+
+public:
+    explicit LAURPLidarServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0) : LAUTCPSerialPortServer(num , identifier, QString(LAURPLIDAR_SERVERIDSTRING), parent) { ; }
+};
+
+#ifndef LAU_SERVER
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -113,18 +127,6 @@ signals:
     void emitError(QString string);
     void emitPoint(QPoint pt);
     void emitScan(QVector<QPoint> pts);
-};
-
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-class LAURPLidarServer : public LAUTCPSerialPortServer
-{
-    Q_OBJECT
-
-public:
-    explicit LAURPLidarServer(int num = LAUTCPSERIALPORTSERVERPORTNUMER, unsigned short identifier = 0xFFFF, QObject *parent = 0) : LAUTCPSerialPortServer(num , identifier, QString(LAURPLIDAR_SERVERIDSTRING), parent) { ; }
-
 };
 
 /****************************************************************************/
@@ -233,5 +235,5 @@ public slots:
 private:
     LAURPLidarWidget *widget;
 };
-
+#endif
 #endif // LAURPLIDARWIDGET_H
