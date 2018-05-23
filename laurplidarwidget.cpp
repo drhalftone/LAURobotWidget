@@ -128,7 +128,7 @@ LAURPLidarLabel::LAURPLidarLabel(QWidget *parent) : QLabel(parent), savePointsFl
 /****************************************************************************/
 void LAURPLidarLabel::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::RightButton) {
+    if (event->button() == Qt::RightButtonLAUTCPSerialPortServer) {
         if (contextMenu) {
             contextMenu->popup(event->globalPos());
         }

@@ -45,10 +45,11 @@
 #include <QCoreApplication>
 #endif
 #include "laurobotwidget.h"
-#include "laurplidarwidget.h"
+
 
 #ifdef LAU_SERVER
 #include "lautcpserialportwidget.h"
+#include "laurplidarwidget.h"
 #endif
 
 #ifdef LAU_ROS

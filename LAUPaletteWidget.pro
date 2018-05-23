@@ -29,8 +29,8 @@ SOURCES += main.cpp \
            lautcpserialportwidget.cpp
 
 HEADERS += laurobotwidget.h \
-           lautcpserialportwidget.h
-
+           lautcpserialportwidget.h \
+           laurplidarwidget.h
 ros {
     TARGET       = RosServer
     CONFIG      += c++11
