@@ -20,14 +20,15 @@ LAURPLidarWidget::LAURPLidarWidget(QString portString, QWidget *parent) : QWidge
 
     // CREATE LIDAR LABEL TO DISPLAY LIDAR DATA AS IT ARRIVES
     label = new LAURPLidarLabel();
-    label->setMinimumHeight(200);
+    label->setMinimumHeight(300);
+    label->setMinimumWidth(300);
     label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->layout()->addWidget(label);
 
-    robolabel = new LAURPLidarLabel();
-    robolabel->setMinimumHeight(200);
-    robolabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    this->layout()->addWidget(robolabel);
+//    robolabel = new LAURPLidarLabel();
+//    robolabel->setMinimumHeight(200);
+//    robolabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+//    this->layout()->addWidget(robolabel);
 
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
     object = new LAURPLidarObject(portString);
@@ -35,7 +36,7 @@ LAURPLidarWidget::LAURPLidarWidget(QString portString, QWidget *parent) : QWidge
 
     // NOW THAT WE'VE MADE OUR CONNECTIONS, TELL ROBOT OBJECT TO CONNECT OVER SERIAL/TCP
     if (object->connectPort()) {
-        connect(robot, SIGNAL(emitPoint(pt)), robolabel, SLOT(onAddPoint(QPoint)), Qt::DirectConnection );
+        connect(robot, SIGNAL(emitPoint(QPoint pt)), robolabel, SLOT(onAddPoint(QPoint)), Qt::DirectConnection );
         connect(object, SIGNAL(emitScan(QVector<QPoint>)), label, SLOT(onAddPoints(QVector<QPoint>)), Qt::DirectConnection);
     }
 }
@@ -52,16 +53,17 @@ LAURPLidarWidget::LAURPLidarWidget(QString ipAddr, int portNum, QWidget *parent)
 
     // CREATE LIDAR LABEL TO DISPLAY LIDAR DATA AS IT ARRIVES
     label = new LAURPLidarLabel();
-    label->setMinimumHeight(200);
+    label->setMinimumHeight(300);
+    label->setMinimumWidth(300);
     label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     label->onEnableSavePoints(true);
     this->layout()->addWidget(label);
 
-    robolabel = new LAURPLidarLabel();
-    robolabel->setMinimumHeight(200);
-    robolabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    robolabel->onEnableSavePoints(true);
-    this->layout()->addWidget(robolabel);
+//    robolabel = new LAURPLidarLabel();
+//    robolabel->setMinimumHeight(200);
+//    robolabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+//    robolabel->onEnableSavePoints(true);
+//    this->layout()->addWidget(robolabel);
 
     // CREATE A ROBOT OBJECT FOR CONTROLLING ROBOT
     object = new LAURPLidarObject(ipAddr, portNum);
@@ -184,6 +186,7 @@ void LAURPLidarLabel::onAddPoint(QPoint pt)
 /****************************************************************************/
 void LAURPLidarLabel::onAddPoints(QList<QPoint> pts)
 {
+    qDebug("Apple");
     for (int n = 0; n < pts.count(); n++) {
         onAddPoint(pts.at(n));
     }
@@ -194,6 +197,7 @@ void LAURPLidarLabel::onAddPoints(QList<QPoint> pts)
 /****************************************************************************/
 void LAURPLidarLabel::onAddPoints(QVector<QPoint> pts)
 {
+    qDebug("Blue");
     for (int n = 0; n < pts.count(); n++) {
         onAddPoint(pts[n]);
     }
@@ -264,6 +268,7 @@ void LAURPLidarLabel::paintEvent(QPaintEvent *)
     painter.setPen(pen);
     for (int n = 1; n < points.count() && n < 10000; n++) {
         painter.drawPoint(points.at(points.count() - n));
+        qDebug("PAINTING");
     }
 
     // END DRAWING

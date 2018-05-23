@@ -86,7 +86,9 @@ int main(int argc, char *argv[])
 //    LAURobotWidget w(QString(), (QWidget*)NULL);
     // TCP Serial Remote setup
     LAURobotWidget w(QString(), -1, (QWidget*)NULL);
+    LAURPLidarDialog l(QString(), -1, (QWidget*)NULL);
     w.show();
+    l.show();
     return a.exec();
 #else
     return (a.exec());

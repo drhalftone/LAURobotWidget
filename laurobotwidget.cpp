@@ -58,6 +58,8 @@ LAURobotWidget::LAURobotWidget(QString ipAddr, int portNum, QWidget *parent) : L
 
         // DISPLAY THE PLOT WIDGET
         plotWidget->show();
+        plotWidget->setMinimumHeight(300);
+        plotWidget->setMinimumWidth(300);
 
         // LET'S START THE BALL ROLLING BY ASKING FOR THE CURRENT ENCODER VALUES
         onRequestEncoder();
